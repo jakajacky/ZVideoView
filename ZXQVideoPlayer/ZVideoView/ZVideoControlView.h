@@ -24,6 +24,7 @@
 @property(nonatomic,strong) ZVideoSliderView *slideView;
 @property(nonatomic,strong) UILabel *currentTimeLabel;
 //@property(nonatomic,strong) UILabel *totalTimeLabel;
+@property (nonatomic, assign) CGFloat value;
 
 @property(nonatomic,strong) UIButton *playButton;
 @property(nonatomic,strong) UIButton *forwardButton;

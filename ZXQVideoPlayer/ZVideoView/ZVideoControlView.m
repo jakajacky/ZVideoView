@@ -8,8 +8,10 @@
 
 #import "ZVideoControlView.h"
 #import "ZVideoSliderView.h"
+#import "ZVideoUtilities.h"
 
 @implementation ZVideoControlView
+
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -23,18 +25,19 @@
   return self;
 }
 
-#pragma mark - 进度条
+#pragma mark -
+#pragma mark 进度条
 - (void)initSlider
 {
   CGFloat y = CGRectGetHeight(self.frame) - 28;
   _slideView = [[ZVideoSliderView alloc] initWithFrame:
               CGRectMake(100, y, self.frame.size.width - 230, kVideoSlideHeight)];
-  _slideView.value = 0.5;
+  _slideView.value = 0.0;
   [self addSubview:_slideView];
 
 }
 
-#pragma mark - 播放和下一首按钮
+#pragma mark 播放和下一首按钮
 - (void)initButton
 {
   _playButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -56,7 +59,7 @@
   
 }
 
-#pragma mark - 创建播放时间label
+#pragma mark 创建播放时间label
 - (void)initCurrentTimeLabel
 {
   _currentTimeLabel = [[UILabel alloc]initWithFrame:
@@ -67,7 +70,49 @@
   _currentTimeLabel.font = [UIFont systemFontOfSize:12];
   _currentTimeLabel.text = @"00:00:00/00:00:00";
   
+}
+
+#pragma mark -
+#pragma mark 设置总时间
+- (void)setDuration:(NSTimeInterval)duration
+{
+  _duration = duration;
   
+  NSArray *ranges = [self getRangesWithString];
+  
+  _currentTimeLabel.text =
+  [_currentTimeLabel.text stringByReplacingCharactersInRange:[ranges[1] rangeValue]
+                                                  withString:TimeStringWithSeconds(_duration)];
+  if (_duration > 0) {
+    _slideView.value = _currentTime / _duration;
+  }
+  else {
+    _slideView.value = 0;
+  }
+}
+
+#pragma mark 设置当前时间
+- (void)setCurrentTime:(NSTimeInterval)currentTime
+{
+  _currentTime = currentTime;
+  
+  NSArray *ranges = [self getRangesWithString];
+  
+  _currentTimeLabel.text =
+  [_currentTimeLabel.text stringByReplacingCharactersInRange:[ranges[0] rangeValue]
+                                                  withString:TimeStringWithSeconds(_currentTime)];
+  if (_duration) {
+    _slideView.value = _currentTime / _duration;
+  }
+  else {
+    _slideView.value = 0;
+  }
+}
+
+#pragma mark 设置进度
+- (void)setValue:(CGFloat)value
+{
+  _slideView.value = value;
 }
 
 #pragma mark -
@@ -90,6 +135,20 @@
   }
 
   [_slideView setNeedsLayout];
+}
+
+#pragma mark -
+#pragma mark private
+- (NSArray *)getRangesWithString
+{
+  NSArray *timeLabel = [_currentTimeLabel.text componentsSeparatedByString:@"/"];
+  NSRange range1 = [_currentTimeLabel.text rangeOfString:timeLabel[0]];
+  NSRange range2 = [_currentTimeLabel.text rangeOfString:timeLabel[1]];
+  
+  NSValue *value1 = [NSValue valueWithRange:range1];
+  NSValue *value2 = [NSValue valueWithRange:range2];
+  
+  return @[value1, value2];
 }
 
 @end

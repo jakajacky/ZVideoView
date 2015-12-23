@@ -13,7 +13,7 @@
 #import "ZVideoControlView.h"
 #import "ZVideoNaviView.h"
 
-@interface ZVideoView ()
+@interface ZVideoView () <ZVideoSliderViewDelegate>
 
 @property (nonatomic, strong) AVPlayer          *player;// 播放属性
 
@@ -29,11 +29,17 @@
 
 @property (nonatomic, strong) ZVideoNaviView    *naviBack;// 返回
 
+@property (nonatomic, assign) BOOL              isPlayingBeforeDrag; //滑动前是否是播放状态
+
+@property (nonatomic, strong) NSTimer           *timer;
+
 //@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
 
 @end
 
 @implementation ZVideoView
+
+static int controlViewHideTime = 0;
 
 #pragma mark -
 #pragma mark Initializations
@@ -43,13 +49,12 @@
   if (self) {
     _width = self.frame.size.width;
     _height = self.frame.size.height;
-    
+  
     [self initPlayer];
     [self initControlView];
     [self initNaviBackView];
     [self initTapGesture];
-    
-    [self hiddenActionView];
+    [self initTimer];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarChanged:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
   }
@@ -78,11 +83,14 @@
                   CGRectMake(0, y, self.frame.size.width, kVideoControlHeight)];
   
   [_controlView.playButton addTarget:self action:@selector(playOrPause) forControlEvents:UIControlEventTouchUpInside];
+  // 默认
   [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"] forState:UIControlStateNormal];
+  _controlView.playButton.selected = NO;
   
   
   [_controlView.forwardButton addTarget:self action:@selector(unKownAction) forControlEvents:UIControlEventTouchUpInside];
   
+  _controlView.slideView.delegate = self;
   
   [self addSubview:_controlView];
 }
@@ -104,6 +112,13 @@
   [self addGestureRecognizer:tap];
 }
 
+#pragma mark 创建计时器
+- (void)initTimer
+{
+  //计时器
+  _timer = [NSTimer scheduledTimerWithTimeInterval:1.f target:self selector:@selector(timeRun) userInfo:nil repeats:YES];
+}
+
 #pragma mark -
 #pragma mark 设置路径
 - (void)setPath:(NSString *)path
@@ -123,24 +138,43 @@
 - (void)playOrPause
 {
   if (_controlView.playButton.selected) {
-    [_player play];
-    [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"] forState:UIControlStateNormal];
-    
+    [self play];
   } else {
-    [_player pause];
-    [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"playBtn@2x.png"] forState:UIControlStateNormal];
-    
+    [self pause];
   }
   _controlView.playButton.selected =!_controlView.playButton.selected;
 }
 - (void)play
 {
+  controlViewHideTime = 0;
+  [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"] forState:UIControlStateNormal];
+  
+  if (![_timer isValid]) {
+    [self initTimer];
+  }
+  [_timer fire];
+  
   [self.player play];
+}
+
+- (void)pause
+{
+  controlViewHideTime = 0;
+  [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"playBtn@2x.png"] forState:UIControlStateNormal];
+  
+  [_timer invalidate];
+  
+  [self.player pause];
+  
+  // 暂停后需自动隐藏控制台
+  [self autoHiddenActionView];
+  
 }
 
 #pragma mark 响应轻拍事件
 - (void)showActionView:(UITapGestureRecognizer *)sender
 {
+  controlViewHideTime = 0;
   if (_controlView.alpha == 1) {
     [UIView animateWithDuration:0.5 animations:^{
       
@@ -154,23 +188,92 @@
       _naviBack.alpha = 1;
     }];
   }
-  if (_controlView.alpha == 1) {
-    
-    [self hiddenActionView];
+  
+  if (_controlView.playButton.selected) {
+    [self autoHiddenActionView];
   }
 }
 
+#pragma mark 隐藏控制台
 - (void)hiddenActionView
 {
+  [UIView animateWithDuration:0.5 animations:^{
+    
+    _controlView.alpha = 0;
+    _naviBack.alpha = 0;
+  }];
+}
+
+#pragma mark 7s之后自动隐藏
+- (void)autoHiddenActionView
+{
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-    
-    [UIView animateWithDuration:0.5 animations:^{
-      
-      _controlView.alpha = 0;
-      _naviBack.alpha = 0;
-    }];
-    
+    [self hiddenActionView];
   });
+}
+
+#pragma mark 响应next事件
+- (void)unKownAction
+{
+  //
+}
+
+#pragma mark 响应timer
+- (void)timeRun
+{
+  controlViewHideTime++;
+  if (_playerItem.duration.timescale != 0) {
+    
+    CMTime currentTime = self.player.currentTime;
+    CMTime duration    = self.playerItem.duration;
+    _controlView.currentTime = CMTimeGetSeconds(currentTime);
+    _controlView.duration    = duration.value / duration.timescale;
+    _controlView.value       = _controlView.currentTime / _controlView.duration;//当前进度
+    
+  }
+  if (_player.status == AVPlayerStatusReadyToPlay) {
+    // 等待加载中
+  } else {
+    
+  }
+  if (controlViewHideTime == 7) {
+    controlViewHideTime = 0;
+    [self hiddenActionView];
+  }
+  
+}
+
+#pragma mark -
+#pragma mark ZVideoSliderDelegate
+- (void)videoSlideViewDidBeginDragging:(ZVideoSliderView *)slideView
+{
+    [self pause];
+    _isPlayingBeforeDrag = !_controlView.playButton.selected;
+}
+
+- (void)videoSlideViewDidDragging:(ZVideoSliderView *)slideView
+{
+    CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
+    CGFloat currentTime = total * slideView.value;
+    NSInteger time = floorf(currentTime);
+
+    [_player seekToTime:CMTimeMake(time, 1)];
+}
+
+- (void)videoSlideViewDidEndDragging:(ZVideoSliderView *)slideView
+{
+  if (_player.status == AVPlayerStatusReadyToPlay) {
+    CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
+    if (total > 0) {
+      CGFloat currentTime = total * slideView.value;
+      NSInteger time = floorf(currentTime);
+      [_player seekToTime:CMTimeMake(time, 1)completionHandler:^(BOOL finished) {
+        if (_isPlayingBeforeDrag) {
+          [self play];
+        }
+      }];
+    }
+  }
 }
 
 #pragma mark -
