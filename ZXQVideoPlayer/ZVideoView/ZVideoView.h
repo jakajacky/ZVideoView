@@ -17,4 +17,8 @@
 
 - (void)setTitle:(NSString *)title;
 
+- (void)showActionView;
+
+- (void)doubleTapAction;
+
 @end

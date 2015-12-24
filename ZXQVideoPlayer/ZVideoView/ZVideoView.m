@@ -12,6 +12,7 @@
 
 #import "ZVideoControlView.h"
 #import "ZVideoNaviView.h"
+#import "ZVideoTaphandler.h"
 
 @interface ZVideoView () <ZVideoSliderViewDelegate>
 
@@ -29,17 +30,22 @@
 
 @property (nonatomic, strong) ZVideoNaviView    *naviBack;// 返回
 
+@property (nonatomic, strong) ZVideoTaphandler  *tapHandler; // 手势
+
 @property (nonatomic, assign) BOOL              isPlayingBeforeDrag; //滑动前是否是播放状态
 
-@property (nonatomic, strong) NSTimer           *timer;
+@property (nonatomic, strong) NSTimer           *timer;       // 进度时间器
 
+@property (nonatomic, strong) NSTimer           *hiddenTimer; // 用于自动隐藏控制台的计数器
 //@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
 
 @end
 
 @implementation ZVideoView
 
-static int controlViewHideTime = 0;
+static int controlViewHideTime = 0;// timer运行中的计数，== 7执行隐藏
+
+static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTimer开始，== 7 执行隐藏
 
 #pragma mark -
 #pragma mark Initializations
@@ -47,6 +53,7 @@ static int controlViewHideTime = 0;
 {
   self = [super initWithFrame:frame];
   if (self) {
+    
     _width = self.frame.size.width;
     _height = self.frame.size.height;
   
@@ -107,9 +114,7 @@ static int controlViewHideTime = 0;
 #pragma mark 创建轻拍手势
 - (void)initTapGesture
 {
-  UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                                        action:@selector(showActionView:)];
-  [self addGestureRecognizer:tap];
+  _tapHandler = [[ZVideoTaphandler alloc] initTapHandlerWithView:self];
 }
 
 #pragma mark 创建计时器
@@ -147,6 +152,7 @@ static int controlViewHideTime = 0;
 - (void)play
 {
   controlViewHideTime = 0;
+  autoHiddenCount = 0;
   [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"] forState:UIControlStateNormal];
   
   if (![_timer isValid]) {
@@ -155,11 +161,15 @@ static int controlViewHideTime = 0;
   [_timer fire];
   
   [self.player play];
+  
+  //   注销hiddenTimer
+  [_hiddenTimer invalidate];
 }
 
 - (void)pause
 {
   controlViewHideTime = 0;
+  autoHiddenCount = 0;
   [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"playBtn@2x.png"] forState:UIControlStateNormal];
   
   [_timer invalidate];
@@ -171,27 +181,37 @@ static int controlViewHideTime = 0;
   
 }
 
+
 #pragma mark 响应轻拍事件
-- (void)showActionView:(UITapGestureRecognizer *)sender
+- (void)showActionView
 {
   controlViewHideTime = 0;
+  autoHiddenCount = 0;
   if (_controlView.alpha == 1) {
     [UIView animateWithDuration:0.5 animations:^{
-      
+
       _controlView.alpha = 0;
       _naviBack.alpha = 0;
     }];
   } else if (_controlView.alpha == 0){
     [UIView animateWithDuration:0.5 animations:^{
-      
+
       _controlView.alpha = 1;
       _naviBack.alpha = 1;
     }];
   }
-  
-  if (_controlView.playButton.selected) {
-    [self autoHiddenActionView];
-  }
+
+//  if (_controlView.playButton.selected) {
+//    [self autoHiddenActionView];
+//  }
+}
+
+#pragma mark 响应双击事件
+- (void)doubleTapAction
+{
+  controlViewHideTime = 0;
+  autoHiddenCount = 0;
+  [self playOrPause];
 }
 
 #pragma mark 隐藏控制台
@@ -207,9 +227,26 @@ static int controlViewHideTime = 0;
 #pragma mark 7s之后自动隐藏
 - (void)autoHiddenActionView
 {
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+  
+//  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//    [self hiddenActionView];
+//  });
+  _hiddenTimer = [NSTimer scheduledTimerWithTimeInterval:1
+                                   target:self
+                                 selector:@selector(hiddenCount)
+                                 userInfo:nil
+                                  repeats:YES];
+  [_hiddenTimer fire];
+}
+
+- (void)hiddenCount
+{
+  autoHiddenCount++;
+  NSLog(@"%d", autoHiddenCount);
+  if (autoHiddenCount == 7) {
     [self hiddenActionView];
-  });
+    autoHiddenCount = 0;
+  }
 }
 
 #pragma mark 响应next事件
@@ -222,6 +259,7 @@ static int controlViewHideTime = 0;
 - (void)timeRun
 {
   controlViewHideTime++;
+  NSLog(@"--->%d", controlViewHideTime);
   if (_playerItem.duration.timescale != 0) {
     
     CMTime currentTime = self.player.currentTime;
@@ -247,17 +285,18 @@ static int controlViewHideTime = 0;
 #pragma mark ZVideoSliderDelegate
 - (void)videoSlideViewDidBeginDragging:(ZVideoSliderView *)slideView
 {
-    [self pause];
-    _isPlayingBeforeDrag = !_controlView.playButton.selected;
+  [self pause];
+  _isPlayingBeforeDrag = !_controlView.playButton.selected;
 }
 
 - (void)videoSlideViewDidDragging:(ZVideoSliderView *)slideView
 {
-    CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
-    CGFloat currentTime = total * slideView.value;
-    NSInteger time = floorf(currentTime);
+  autoHiddenCount = 0;
+  CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
+  CGFloat currentTime = total * slideView.value;
+  NSInteger time = floorf(currentTime);
 
-    [_player seekToTime:CMTimeMake(time, 1)];
+  [_player seekToTime:CMTimeMake(time, 1)];
 }
 
 - (void)videoSlideViewDidEndDragging:(ZVideoSliderView *)slideView
@@ -315,6 +354,8 @@ static int controlViewHideTime = 0;
 - (void)dealloc
 {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  
+  [_tapHandler invalidate];
 }
 
 @end

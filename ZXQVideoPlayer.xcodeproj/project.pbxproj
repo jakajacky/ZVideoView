@@ -13,6 +13,7 @@
 		C3B63DD81C25D80B0056E7C5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C3B63DD61C25D80B0056E7C5 /* Main.storyboard */; };
 		C3B63DDA1C25D80B0056E7C5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C3B63DD91C25D80B0056E7C5 /* Assets.xcassets */; };
 		C3B63DDD1C25D80B0056E7C5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C3B63DDB1C25D80B0056E7C5 /* LaunchScreen.storyboard */; };
+		C3CBBAF11C2A7AA700B0D55E /* ZVideoTaphandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C3CBBAF01C2A7AA700B0D55E /* ZVideoTaphandler.m */; };
 		C3FEB5311C25DB3800368557 /* @$91X`{7~B}~XP0C[DG~XDI.jpg in Resources */ = {isa = PBXBuildFile; fileRef = C3FEB4F81C25DB3800368557 /* @$91X`{7~B}~XP0C[DG~XDI.jpg */; };
 		C3FEB5321C25DB3800368557 /* bg_share_large.png in Resources */ = {isa = PBXBuildFile; fileRef = C3FEB4F91C25DB3800368557 /* bg_share_large.png */; };
 		C3FEB5331C25DB3800368557 /* bg_share_large@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C3FEB4FA1C25DB3800368557 /* bg_share_large@2x.png */; };
@@ -86,6 +87,8 @@
 		C3B63DD91C25D80B0056E7C5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C3B63DDC1C25D80B0056E7C5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		C3B63DDE1C25D80B0056E7C5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C3CBBAEF1C2A7AA700B0D55E /* ZVideoTaphandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZVideoTaphandler.h; sourceTree = "<group>"; };
+		C3CBBAF01C2A7AA700B0D55E /* ZVideoTaphandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZVideoTaphandler.m; sourceTree = "<group>"; };
 		C3CCD0401C293EF500F4D8CB /* ZVideoUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZVideoUtilities.h; sourceTree = "<group>"; };
 		C3FEB4F81C25DB3800368557 /* @$91X`{7~B}~XP0C[DG~XDI.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "@$91X`{7~B}~XP0C[DG~XDI.jpg"; sourceTree = "<group>"; };
 		C3FEB4F91C25DB3800368557 /* bg_share_large.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bg_share_large.png; sourceTree = "<group>"; };
@@ -217,6 +220,8 @@
 				C3FEB5701C25DC6B00368557 /* ZVideoSliderView.m */,
 				C3FEB5721C25DC8200368557 /* ZVideoNaviView.h */,
 				C3FEB5731C25DC8200368557 /* ZVideoNaviView.m */,
+				C3CBBAEF1C2A7AA700B0D55E /* ZVideoTaphandler.h */,
+				C3CBBAF01C2A7AA700B0D55E /* ZVideoTaphandler.m */,
 				C3CCD0401C293EF500F4D8CB /* ZVideoUtilities.h */,
 			);
 			path = ZVideoView;
@@ -420,6 +425,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C3FEB5741C25DC8200368557 /* ZVideoNaviView.m in Sources */,
+				C3CBBAF11C2A7AA700B0D55E /* ZVideoTaphandler.m in Sources */,
 				C3FEB5711C25DC6B00368557 /* ZVideoSliderView.m in Sources */,
 				C3B63DD51C25D80B0056E7C5 /* ViewController.m in Sources */,
 				C3FEB56E1C25DC4300368557 /* ZVideoControlView.m in Sources */,
