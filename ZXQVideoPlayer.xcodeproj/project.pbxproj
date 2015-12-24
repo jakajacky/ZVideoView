@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C3A17A071C2BA30B00DFD251 /* ZVideoSwipeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C3A17A061C2BA30B00DFD251 /* ZVideoSwipeHandler.m */; };
+		C3A17A0C1C2BC1F200DFD251 /* ZVideoPanHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C3A17A0B1C2BC1F200DFD251 /* ZVideoPanHandler.m */; };
 		C3B63DCF1C25D80B0056E7C5 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C3B63DCE1C25D80B0056E7C5 /* main.m */; };
 		C3B63DD21C25D80B0056E7C5 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C3B63DD11C25D80B0056E7C5 /* AppDelegate.m */; };
 		C3B63DD51C25D80B0056E7C5 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3B63DD41C25D80B0056E7C5 /* ViewController.m */; };
@@ -78,8 +78,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		C3A17A051C2BA30B00DFD251 /* ZVideoSwipeHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZVideoSwipeHandler.h; sourceTree = "<group>"; };
-		C3A17A061C2BA30B00DFD251 /* ZVideoSwipeHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZVideoSwipeHandler.m; sourceTree = "<group>"; };
+		C3A17A0A1C2BC1F200DFD251 /* ZVideoPanHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZVideoPanHandler.h; sourceTree = "<group>"; };
+		C3A17A0B1C2BC1F200DFD251 /* ZVideoPanHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZVideoPanHandler.m; sourceTree = "<group>"; };
 		C3B63DCA1C25D80B0056E7C5 /* ZXQVideoPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZXQVideoPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3B63DCE1C25D80B0056E7C5 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C3B63DD01C25D80B0056E7C5 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -225,8 +225,8 @@
 				C3FEB5731C25DC8200368557 /* ZVideoNaviView.m */,
 				C3CBBAEF1C2A7AA700B0D55E /* ZVideoTaphandler.h */,
 				C3CBBAF01C2A7AA700B0D55E /* ZVideoTaphandler.m */,
-				C3A17A051C2BA30B00DFD251 /* ZVideoSwipeHandler.h */,
-				C3A17A061C2BA30B00DFD251 /* ZVideoSwipeHandler.m */,
+				C3A17A0A1C2BC1F200DFD251 /* ZVideoPanHandler.h */,
+				C3A17A0B1C2BC1F200DFD251 /* ZVideoPanHandler.m */,
 				C3CCD0401C293EF500F4D8CB /* ZVideoUtilities.h */,
 			);
 			path = ZVideoView;
@@ -433,11 +433,11 @@
 				C3CBBAF11C2A7AA700B0D55E /* ZVideoTaphandler.m in Sources */,
 				C3FEB5711C25DC6B00368557 /* ZVideoSliderView.m in Sources */,
 				C3B63DD51C25D80B0056E7C5 /* ViewController.m in Sources */,
-				C3A17A071C2BA30B00DFD251 /* ZVideoSwipeHandler.m in Sources */,
 				C3FEB56E1C25DC4300368557 /* ZVideoControlView.m in Sources */,
 				C3B63DD21C25D80B0056E7C5 /* AppDelegate.m in Sources */,
 				C3B63DCF1C25D80B0056E7C5 /* main.m in Sources */,
 				C3FEB56B1C25DBBC00368557 /* ZVideoView.m in Sources */,
+				C3A17A0C1C2BC1F200DFD251 /* ZVideoPanHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -12,31 +12,35 @@
 
 #import "ZVideoControlView.h"
 #import "ZVideoNaviView.h"
+
 #import "ZVideoTaphandler.h"
+#import "ZVideoPanHandler.h"
 
 @interface ZVideoView () <ZVideoSliderViewDelegate>
 
-@property (nonatomic, strong) AVPlayer          *player;// 播放属性
+@property (nonatomic, strong) AVPlayer           *player;// 播放属性
 
-@property (nonatomic, strong) AVPlayerItem      *playerItem;
+@property (nonatomic, strong) AVPlayerItem       *playerItem;
 
-@property (nonatomic, strong) AVPlayerLayer     *playerLayer;
+@property (nonatomic, strong) AVPlayerLayer      *playerLayer;
 
-@property (nonatomic, assign) CGFloat           width;// 坐标
+@property (nonatomic, assign) CGFloat            width;// 坐标
 
-@property (nonatomic, assign) CGFloat           height;// 坐标
+@property (nonatomic, assign) CGFloat            height;// 坐标
 
-@property (nonatomic, strong) ZVideoControlView *controlView;// 控制台
+@property (nonatomic, strong) ZVideoControlView  *controlView;// 控制台
 
-@property (nonatomic, strong) ZVideoNaviView    *naviBack;// 返回
+@property (nonatomic, strong) ZVideoNaviView     *naviBack;// 返回
 
-@property (nonatomic, strong) ZVideoTaphandler  *tapHandler; // 手势
+@property (nonatomic, strong) ZVideoTaphandler   *tapHandler;// tap手势
 
-@property (nonatomic, assign) BOOL              isPlayingBeforeDrag; //滑动前是否是播放状态
+@property (nonatomic, strong) ZVideoPanHandler *panHandler;// swipe手势
 
-@property (nonatomic, strong) NSTimer           *timer;       // 进度时间器
+@property (nonatomic, assign) BOOL               isPlayingBeforeDrag;//滑动前是否是播放状态
 
-@property (nonatomic, strong) NSTimer           *hiddenTimer; // 用于自动隐藏控制台的计数器
+@property (nonatomic, strong) NSTimer            *timer;// 进度时间器
+
+@property (nonatomic, strong) NSTimer            *hiddenTimer;// 用于自动隐藏控制台的计数器
 //@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
 
 @end
@@ -60,7 +64,7 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
     [self initPlayer];
     [self initControlView];
     [self initNaviBackView];
-    [self initTapGesture];
+    [self initGesture];
     [self initTimer];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarChanged:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
@@ -111,10 +115,12 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
   [self addSubview:_naviBack];
 }
 
-#pragma mark 创建轻拍手势
-- (void)initTapGesture
+#pragma mark 创建手势
+- (void)initGesture
 {
   _tapHandler = [[ZVideoTaphandler alloc] initTapHandlerWithView:self];
+  
+  _panHandler = [[ZVideoPanHandler alloc] initPanHandlerWithView:self];
 }
 
 #pragma mark 创建计时器
@@ -231,12 +237,12 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
 //  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 //    [self hiddenActionView];
 //  });
-  _hiddenTimer = [NSTimer scheduledTimerWithTimeInterval:1
-                                   target:self
-                                 selector:@selector(hiddenCount)
-                                 userInfo:nil
-                                  repeats:YES];
-  [_hiddenTimer fire];
+//  _hiddenTimer = [NSTimer scheduledTimerWithTimeInterval:1
+//                                   target:self
+//                                 selector:@selector(hiddenCount)
+//                                 userInfo:nil
+//                                  repeats:YES];
+//  [_hiddenTimer fire];
 }
 
 - (void)hiddenCount
