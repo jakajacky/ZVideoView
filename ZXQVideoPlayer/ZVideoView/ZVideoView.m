@@ -16,31 +16,35 @@
 #import "ZVideoTaphandler.h"
 #import "ZVideoPanHandler.h"
 
-@interface ZVideoView () <ZVideoSliderViewDelegate>
+@interface ZVideoView () <ZVideoSliderViewDelegate, ZVideoPanHandlerDelegate>
 
-@property (nonatomic, strong) AVPlayer           *player;// 播放属性
+@property (nonatomic, strong) AVPlayer          *player;// 播放属性
 
-@property (nonatomic, strong) AVPlayerItem       *playerItem;
+@property (nonatomic, strong) AVPlayerItem      *playerItem;
 
-@property (nonatomic, strong) AVPlayerLayer      *playerLayer;
+@property (nonatomic, strong) AVPlayerLayer     *playerLayer;
 
-@property (nonatomic, assign) CGFloat            width;// 坐标
+@property (nonatomic, assign) CGFloat           width;// 坐标
 
-@property (nonatomic, assign) CGFloat            height;// 坐标
+@property (nonatomic, assign) CGFloat           height;// 坐标
 
-@property (nonatomic, strong) ZVideoControlView  *controlView;// 控制台
+@property (nonatomic, strong) ZVideoControlView *controlView;// 控制台
 
-@property (nonatomic, strong) ZVideoNaviView     *naviBack;// 返回
+@property (nonatomic, strong) ZVideoNaviView    *naviBack;// 返回
 
-@property (nonatomic, strong) ZVideoTaphandler   *tapHandler;// tap手势
+@property (nonatomic, strong) ZVideoTaphandler  *tapHandler;// tap手势
 
-@property (nonatomic, strong) ZVideoPanHandler *panHandler;// swipe手势
+@property (nonatomic, strong) ZVideoPanHandler  *panHandler;// swipe手势
 
-@property (nonatomic, assign) BOOL               isPlayingBeforeDrag;//滑动前是否是播放状态
+@property (nonatomic, assign) BOOL              isPlayingBeforeDrag;//滑动前是否是播放状态
 
-@property (nonatomic, strong) NSTimer            *timer;// 进度时间器
+@property (nonatomic, strong) NSTimer           *timer;// 进度时间器
 
-@property (nonatomic, strong) NSTimer            *hiddenTimer;// 用于自动隐藏控制台的计数器
+@property (nonatomic, strong) NSTimer           *hiddenTimer;// 用于自动隐藏控制台的计数器
+
+@property (nonatomic, strong) UISlider          *volumeSlider; // 系统音量
+
+@property (nonatomic, assign) CGFloat           currentVolume; // 当前音量
 //@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
 
 @end
@@ -76,7 +80,7 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
 - (void)initPlayer
 {
   // 创建AVPlayer
-  
+  _currentVolume = 0; // 初始化音量
   self.player = [[AVPlayer alloc] init];
   
   _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
@@ -121,6 +125,7 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
   _tapHandler = [[ZVideoTaphandler alloc] initTapHandlerWithView:self];
   
   _panHandler = [[ZVideoPanHandler alloc] initPanHandlerWithView:self];
+  _panHandler.delegate = self;
 }
 
 #pragma mark 创建计时器
@@ -237,12 +242,14 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
 //  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 //    [self hiddenActionView];
 //  });
-//  _hiddenTimer = [NSTimer scheduledTimerWithTimeInterval:1
-//                                   target:self
-//                                 selector:@selector(hiddenCount)
-//                                 userInfo:nil
-//                                  repeats:YES];
-//  [_hiddenTimer fire];
+  if (![_hiddenTimer isValid]) {
+    _hiddenTimer = [NSTimer scheduledTimerWithTimeInterval:1
+                                     target:self
+                                   selector:@selector(hiddenCount)
+                                   userInfo:nil
+                                    repeats:YES];
+  }
+  [_hiddenTimer fire];
 }
 
 - (void)hiddenCount
@@ -320,6 +327,68 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
     }
   }
 }
+
+#pragma mark -
+#pragma mark ZVideoPanHandlerDelegate
+- (void)videoViewDidBeginPan
+{
+  [self pause];
+  _isPlayingBeforeDrag = !_controlView.playButton.selected;
+}
+
+- (void)videoViewDidHorizontalPanning:(CGFloat)x
+{
+  autoHiddenCount = 0;
+  CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
+  CGFloat currentTime = total * x /2 * 2048.0;
+  
+  NSInteger time = floorf(currentTime + CMTimeGetSeconds(_player.currentTime));
+  
+  [_player seekToTime:CMTimeMake(time, 1)];
+}
+
+- (void)videoViewDidEndHorizontalPan:(CGFloat)x
+{
+  if (_player.status == AVPlayerStatusReadyToPlay) {
+    CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
+    if (total > 0) {
+      CGFloat currentTime = total * x / 2 * 2048.0;
+      NSInteger time = floorf(currentTime + CMTimeGetSeconds(_player.currentTime));
+      [_player seekToTime:CMTimeMake(time, 1)completionHandler:^(BOOL finished) {
+        if (_isPlayingBeforeDrag) {
+          [self play];
+        }
+      }];
+    }
+  }
+}
+
+- (void)videoViewDidVerticalPanning:(CGFloat)y
+{
+  if (_isPlayingBeforeDrag) {
+    [self play];
+  }
+  // 控制音量
+  //获取系统音量
+  MPVolumeView *volumeView = [[MPVolumeView alloc] init];
+  
+  for (UIView *view in [volumeView subviews]){
+    if ([view.class.description isEqualToString:@"MPVolumeSlider"]){
+      _volumeSlider = (UISlider *)view;
+      break;
+    }
+  }
+  NSLog(@"%f--------%f", _volumeSlider.maximumValue, y / (768.0));
+  _currentVolume = _currentVolume + y / (3 * 768.0);
+  [_volumeSlider setValue:_currentVolume];
+  [_volumeSlider sendActionsForControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)videoViewDidEndVerticalPan:(CGFloat)y
+{
+  
+}
+
 
 #pragma mark -
 #pragma mark 布局
