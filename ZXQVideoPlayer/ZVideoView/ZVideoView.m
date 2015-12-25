@@ -10,11 +10,12 @@
 #import <AVFoundation/AVFoundation.h>
 #import <MediaPlayer/MediaPlayer.h>
 
-#import "ZVideoControlView.h"
 #import "ZVideoNaviView.h"
 
 #import "ZVideoTaphandler.h"
 #import "ZVideoPanHandler.h"
+
+#define kIsPlayLocalVideo 1
 
 @interface ZVideoView () <ZVideoSliderViewDelegate, ZVideoPanHandlerDelegate>
 
@@ -27,8 +28,6 @@
 @property (nonatomic, assign) CGFloat           width;// 坐标
 
 @property (nonatomic, assign) CGFloat           height;// 坐标
-
-@property (nonatomic, strong) ZVideoControlView *controlView;// 控制台
 
 @property (nonatomic, strong) ZVideoNaviView    *naviBack;// 返回
 
@@ -45,6 +44,7 @@
 @property (nonatomic, strong) UISlider          *volumeSlider; // 系统音量
 
 @property (nonatomic, assign) CGFloat           currentVolume; // 当前音量
+
 //@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
 
 @end
@@ -54,6 +54,10 @@
 static int controlViewHideTime = 0;// timer运行中的计数，== 7执行隐藏
 
 static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTimer开始，== 7 执行隐藏
+
+static CGFloat currentTime = 0;
+
+static int seekTime = 0;
 
 #pragma mark -
 #pragma mark Initializations
@@ -97,13 +101,18 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
   _controlView = [[ZVideoControlView alloc] initWithFrame:
                   CGRectMake(0, y, self.frame.size.width, kVideoControlHeight)];
   
-  [_controlView.playButton addTarget:self action:@selector(playOrPause) forControlEvents:UIControlEventTouchUpInside];
+  [_controlView.playButton addTarget:self
+                              action:@selector(playOrPause)
+                    forControlEvents:UIControlEventTouchUpInside];
   // 默认
-  [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"] forState:UIControlStateNormal];
+  [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"]
+                                     forState:UIControlStateNormal];
   _controlView.playButton.selected = NO;
   
   
-  [_controlView.forwardButton addTarget:self action:@selector(unKownAction) forControlEvents:UIControlEventTouchUpInside];
+  [_controlView.forwardButton addTarget:self
+                                 action:@selector(unKownAction)
+                       forControlEvents:UIControlEventTouchUpInside];
   
   _controlView.slideView.delegate = self;
   
@@ -132,15 +141,26 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
 - (void)initTimer
 {
   //计时器
-  _timer = [NSTimer scheduledTimerWithTimeInterval:1.f target:self selector:@selector(timeRun) userInfo:nil repeats:YES];
+  _timer = [NSTimer scheduledTimerWithTimeInterval:1.f
+                                            target:self
+                                          selector:@selector(timeRun)
+                                          userInfo:nil
+                                           repeats:YES];
 }
 
 #pragma mark -
 #pragma mark 设置路径
 - (void)setPath:(NSString *)path
 {
+#ifdef kIsPlayLocalVideo
+  NSURL *sourceMovieUrl = [NSURL fileURLWithPath:path];
+  AVAsset *movieAsset = [AVURLAsset URLAssetWithURL:sourceMovieUrl options:nil];
+  self.playerItem = [AVPlayerItem playerItemWithAsset:movieAsset];
+#else
   self.playerItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:path]];
+#endif
   [self.player replaceCurrentItemWithPlayerItem:_playerItem];
+
 }
 
 #pragma mark 设置标题
@@ -164,7 +184,8 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
 {
   controlViewHideTime = 0;
   autoHiddenCount = 0;
-  [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"] forState:UIControlStateNormal];
+  [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"]
+                                     forState:UIControlStateNormal];
   
   if (![_timer isValid]) {
     [self initTimer];
@@ -181,7 +202,8 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
 {
   controlViewHideTime = 0;
   autoHiddenCount = 0;
-  [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"playBtn@2x.png"] forState:UIControlStateNormal];
+  [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"playBtn@2x.png"]
+                                     forState:UIControlStateNormal];
   
   [_timer invalidate];
   
@@ -238,10 +260,6 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
 #pragma mark 7s之后自动隐藏
 - (void)autoHiddenActionView
 {
-  
-//  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(7 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//    [self hiddenActionView];
-//  });
   if (![_hiddenTimer isValid]) {
     _hiddenTimer = [NSTimer scheduledTimerWithTimeInterval:1
                                      target:self
@@ -272,7 +290,7 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
 - (void)timeRun
 {
   controlViewHideTime++;
-  NSLog(@"--->%d", controlViewHideTime);
+//  NSLog(@"--->%d", controlViewHideTime);
   if (_playerItem.duration.timescale != 0) {
     
     CMTime currentTime = self.player.currentTime;
@@ -332,35 +350,68 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
 #pragma mark ZVideoPanHandlerDelegate
 - (void)videoViewDidBeginPan
 {
-  [self pause];
   _isPlayingBeforeDrag = !_controlView.playButton.selected;
 }
 
 - (void)videoViewDidHorizontalPanning:(CGFloat)x
 {
+  _isPlayingBeforeDrag = !_controlView.playButton.selected;
+  [self pause];
+  
   autoHiddenCount = 0;
   CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
-  CGFloat currentTime = total * x /2 * 2048.0;
-  
-  NSInteger time = floorf(currentTime + CMTimeGetSeconds(_player.currentTime));
-  
-  [_player seekToTime:CMTimeMake(time, 1)];
+  if (total > 0) {
+//    CGFloat currentTime = total * x / (10 * 2048.0);
+    CGFloat increTime = total * x / (10 * 2048.0);
+    
+    CGFloat time = increTime + CMTimeGetSeconds(_player.currentTime);
+    if (currentTime == CMTimeGetSeconds(_player.currentTime)) {
+      time = seekTime + 1;
+    }
+    //      NSInteger time = floorf(currentTime + CMTimeGetSeconds(_player.currentTime));
+    currentTime = CMTimeGetSeconds(_player.currentTime);
+    seekTime = time;
+
+    if (time < 0) {
+      time = 0;
+    }
+    if (time > total) {
+      time = total;
+    }
+    [_player seekToTime:CMTimeMake(time, 1)completionHandler:^(BOOL finished) {
+      if (_isPlayingBeforeDrag) {
+        [self play];
+      }
+    }];
+  }
 }
 
 - (void)videoViewDidEndHorizontalPan:(CGFloat)x
 {
-  if (_player.status == AVPlayerStatusReadyToPlay) {
-    CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
-    if (total > 0) {
-      CGFloat currentTime = total * x / 2 * 2048.0;
-      NSInteger time = floorf(currentTime + CMTimeGetSeconds(_player.currentTime));
-      [_player seekToTime:CMTimeMake(time, 1)completionHandler:^(BOOL finished) {
-        if (_isPlayingBeforeDrag) {
-          [self play];
-        }
-      }];
-    }
-  }
+//  if (_player.status == AVPlayerStatusReadyToPlay) {
+//    CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
+//    if (total > 0) {
+//      CGFloat increTime = total * x / (10 * 2048.0);
+//      
+//      
+//      CGFloat time = increTime + CMTimeGetSeconds(_player.currentTime);
+//      if (currentTime == CMTimeGetSeconds(_player.currentTime)) {
+//        time = seekTime + 1;
+//      }
+////      NSInteger time = floorf(currentTime + CMTimeGetSeconds(_player.currentTime));
+//      
+//      
+//      currentTime = CMTimeGetSeconds(_player.currentTime);
+//      seekTime = time;
+//
+////      NSLog(@"%f+++%f+++%f", increTime, CMTimeGetSeconds(_player.currentTime), time);
+//      [_player seekToTime:CMTimeMake(time, 1)completionHandler:^(BOOL finished) {
+//        if (_isPlayingBeforeDrag) {
+//          [self play];
+//        }
+//      }];
+//    }
+//  }
 }
 
 - (void)videoViewDidVerticalPanning:(CGFloat)y
@@ -378,8 +429,13 @@ static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTime
       break;
     }
   }
-  NSLog(@"%f--------%f", _volumeSlider.maximumValue, y / (768.0));
   _currentVolume = _currentVolume + y / (3 * 768.0);
+  if (_currentVolume < 0) {
+    _currentVolume = 0;
+  }
+  if (_currentVolume > 1) {
+    _currentVolume = 1;
+  }
   [_volumeSlider setValue:_currentVolume];
   [_volumeSlider sendActionsForControlEvents:UIControlEventTouchUpInside];
 }

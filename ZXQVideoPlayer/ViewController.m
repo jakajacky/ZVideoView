@@ -31,8 +31,8 @@
 //  ZVideoView *vi = [[ZVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
 //  vi.backgroundColor = [UIColor redColor];
 //  [self.view addSubview:vi];
-  
-  [_zView setPath:@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"];
+  NSString *path = [[NSBundle mainBundle] pathForResource:@"282M mp4" ofType:@"mp4"];
+  [_zView setPath:path];
   [_zView setTitle:@"视频播放"];
   _zView.backgroundColor = [UIColor whiteColor];
   [_zView play];

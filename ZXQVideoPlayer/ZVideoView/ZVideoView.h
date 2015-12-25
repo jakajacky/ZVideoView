@@ -7,9 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ZVideoControlView.h"
 #define kVideoNaviHeight 44
 
 @interface ZVideoView : UIView
+
+@property (nonatomic, strong) ZVideoControlView *controlView;// 控制台
 
 - (void)play;
 
