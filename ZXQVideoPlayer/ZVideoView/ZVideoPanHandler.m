@@ -13,7 +13,6 @@
 @interface ZVideoPanHandler () <UIGestureRecognizerDelegate>
 
 @property (nonatomic, readonly) UIPanGestureRecognizer *horizontalPan;
-//@property (nonatomic, readonly) UIPanGestureRecognizer *verticalPan;
 
 @end
 
@@ -37,7 +36,7 @@
 {
   CGPoint locationPoint = [sender translationInView:_view];
   CGPoint speedPoint    = [sender velocityInView:_view];
-  NSLog(@"%f=--=%f", locationPoint.x, locationPoint.y);
+//  NSLog(@"%f=--=%f", locationPoint.x, locationPoint.y);
 //  NSLog(@"%f=-++-=%f", speedPoint.x, speedPoint.y);
   if (sender.state == UIGestureRecognizerStateBegan) { // pan开始
     if (self.delegate && [self.delegate respondsToSelector:@selector(videoViewDidBeginPan)]) {
@@ -47,7 +46,7 @@
   
   CGFloat x = speedPoint.x > 0 ? speedPoint.x : speedPoint.x * -1;
   CGFloat y = speedPoint.y > 0 ? speedPoint.y : speedPoint.y * -1;
-  if (x > y && locationPoint.y <= 5 && locationPoint.y >= -5) { // 横向滑动为主
+  if (x > y && locationPoint.y <= 15 && locationPoint.y >= -15) { // 横向滑动为主
     if (self.delegate && [self.delegate respondsToSelector:@selector(videoViewDidHorizontalPanning:)]) {
       [self.delegate videoViewDidHorizontalPanning:locationPoint.x];
     }
@@ -71,11 +70,6 @@
   }
 }
 
-- (void)verticalPanAction
-{
-  NSLog(@"我正在垂直滑动++++++++");
-}
-
 - (void)invalidate
 {
   _horizontalPan.delegate = nil;
@@ -88,7 +82,8 @@
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
   CGPoint point = [gestureRecognizer locationInView:self.view];
   BOOL inControlView = CGRectContainsPoint(_view.controlView.frame, point);
-  return !(inControlView);
+  BOOL inNaviView    = CGRectContainsPoint(_view.naviBack.frame, point);
+  return !(inControlView) && !(inNaviView);
 }
 
 @end

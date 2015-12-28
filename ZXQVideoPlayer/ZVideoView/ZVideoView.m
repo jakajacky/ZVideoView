@@ -10,42 +10,34 @@
 #import <AVFoundation/AVFoundation.h>
 #import <MediaPlayer/MediaPlayer.h>
 
-#import "ZVideoNaviView.h"
-
 #import "ZVideoTaphandler.h"
 #import "ZVideoPanHandler.h"
 
-#define kIsPlayLocalVideo 1
+#define kIsPlayLocalVideo 0
 
 @interface ZVideoView () <ZVideoSliderViewDelegate, ZVideoPanHandlerDelegate>
 
-@property (nonatomic, strong) AVPlayer          *player;// 播放属性
+@property (nonatomic, strong) AVPlayer          *player;            // 播放属性
 
 @property (nonatomic, strong) AVPlayerItem      *playerItem;
 
 @property (nonatomic, strong) AVPlayerLayer     *playerLayer;
 
-@property (nonatomic, assign) CGFloat           width;// 坐标
+@property (nonatomic, assign) CGFloat           width;              // 坐标
 
-@property (nonatomic, assign) CGFloat           height;// 坐标
+@property (nonatomic, assign) CGFloat           height;             // 坐标
 
-@property (nonatomic, strong) ZVideoNaviView    *naviBack;// 返回
+@property (nonatomic, strong) ZVideoTaphandler  *tapHandler;        // tap手势
 
-@property (nonatomic, strong) ZVideoTaphandler  *tapHandler;// tap手势
-
-@property (nonatomic, strong) ZVideoPanHandler  *panHandler;// swipe手势
+@property (nonatomic, strong) ZVideoPanHandler  *panHandler;        // swipe手势
 
 @property (nonatomic, assign) BOOL              isPlayingBeforeDrag;//滑动前是否是播放状态
 
-@property (nonatomic, strong) NSTimer           *timer;// 进度时间器
+@property (nonatomic, strong) NSTimer           *timer;             // 进度时间器
 
-@property (nonatomic, strong) NSTimer           *hiddenTimer;// 用于自动隐藏控制台的计数器
+@property (nonatomic, strong) NSTimer           *hiddenTimer;       // 用于自动隐藏控制台的计数器
 
-@property (nonatomic, strong) UISlider          *volumeSlider; // 系统音量
-
-@property (nonatomic, assign) CGFloat           currentVolume; // 当前音量
-
-//@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
+@property (nonatomic, strong) UISlider          *volumeSlider;      // 系统音量
 
 @end
 
@@ -53,11 +45,7 @@
 
 static int controlViewHideTime = 0;// timer运行中的计数，== 7执行隐藏
 
-static int autoHiddenCount = 0;    // timer停止（player暂停），hiddenTimer开始，== 7 执行隐藏
-
-static CGFloat currentTime = 0;
-
-static int seekTime = 0;
+static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTimer开始，== 7 执行隐藏
 
 #pragma mark -
 #pragma mark Initializations
@@ -65,17 +53,19 @@ static int seekTime = 0;
 {
   self = [super initWithFrame:frame];
   if (self) {
-    
     _width = self.frame.size.width;
     _height = self.frame.size.height;
-  
+    
     [self initPlayer];
     [self initControlView];
     [self initNaviBackView];
     [self initGesture];
     [self initTimer];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarChanged:) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(statusBarChanged:)
+                                                 name:UIApplicationDidChangeStatusBarOrientationNotification
+                                               object:nil];
   }
   return self;
 }
@@ -105,6 +95,7 @@ static int seekTime = 0;
                               action:@selector(playOrPause)
                     forControlEvents:UIControlEventTouchUpInside];
   // 默认
+//  _controlView.rate = 1;
   [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"]
                                      forState:UIControlStateNormal];
   _controlView.playButton.selected = NO;
@@ -125,6 +116,7 @@ static int seekTime = 0;
   _naviBack = [[ZVideoNaviView alloc] initWithFrame:
                CGRectMake(0, 0, self.frame.size.width, kVideoNaviHeight)];
 
+  [_naviBack.backButton addTarget:self action:@selector(didCloseVideoView:) forControlEvents:UIControlEventTouchUpInside];
   [self addSubview:_naviBack];
 }
 
@@ -132,7 +124,6 @@ static int seekTime = 0;
 - (void)initGesture
 {
   _tapHandler = [[ZVideoTaphandler alloc] initTapHandlerWithView:self];
-  
   _panHandler = [[ZVideoPanHandler alloc] initPanHandlerWithView:self];
   _panHandler.delegate = self;
 }
@@ -152,13 +143,16 @@ static int seekTime = 0;
 #pragma mark 设置路径
 - (void)setPath:(NSString *)path
 {
-#ifdef kIsPlayLocalVideo
+#if kIsPlayLocalVideo
   NSURL *sourceMovieUrl = [NSURL fileURLWithPath:path];
   AVAsset *movieAsset = [AVURLAsset URLAssetWithURL:sourceMovieUrl options:nil];
   self.playerItem = [AVPlayerItem playerItemWithAsset:movieAsset];
 #else
   self.playerItem = [AVPlayerItem playerItemWithURL:[NSURL URLWithString:path]];
 #endif
+  [self.playerItem addObserver:self
+                    forKeyPath:@"loadedTimeRanges"
+                       options:NSKeyValueObservingOptionNew context:nil];// 监听loadedTimeRanges属性
   [self.player replaceCurrentItemWithPlayerItem:_playerItem];
 
 }
@@ -193,7 +187,6 @@ static int seekTime = 0;
   [_timer fire];
   
   [self.player play];
-  
   //   注销hiddenTimer
   [_hiddenTimer invalidate];
 }
@@ -208,12 +201,17 @@ static int seekTime = 0;
   [_timer invalidate];
   
   [self.player pause];
-  
   // 暂停后需自动隐藏控制台
   [self autoHiddenActionView];
-  
 }
 
+- (void)stop
+{
+  [_timer invalidate];
+  [_hiddenTimer invalidate];
+  
+  [_player replaceCurrentItemWithPlayerItem:nil];
+}
 
 #pragma mark 响应轻拍事件
 - (void)showActionView
@@ -222,21 +220,15 @@ static int seekTime = 0;
   autoHiddenCount = 0;
   if (_controlView.alpha == 1) {
     [UIView animateWithDuration:0.5 animations:^{
-
       _controlView.alpha = 0;
       _naviBack.alpha = 0;
     }];
   } else if (_controlView.alpha == 0){
     [UIView animateWithDuration:0.5 animations:^{
-
       _controlView.alpha = 1;
       _naviBack.alpha = 1;
     }];
   }
-
-//  if (_controlView.playButton.selected) {
-//    [self autoHiddenActionView];
-//  }
 }
 
 #pragma mark 响应双击事件
@@ -247,11 +239,19 @@ static int seekTime = 0;
   [self playOrPause];
 }
 
+#pragma mark 关闭
+- (void)didCloseVideoView:(UIButton *)sender
+{
+  if (_delegate && [_delegate respondsToSelector:@selector(videoView:didCloseAtTime:)]) {
+    [_delegate videoView:self didCloseAtTime:0];
+    [self stop];
+  }
+}
+
 #pragma mark 隐藏控制台
 - (void)hiddenActionView
 {
   [UIView animateWithDuration:0.5 animations:^{
-    
     _controlView.alpha = 0;
     _naviBack.alpha = 0;
   }];
@@ -273,7 +273,7 @@ static int seekTime = 0;
 - (void)hiddenCount
 {
   autoHiddenCount++;
-  NSLog(@"%d", autoHiddenCount);
+//  NSLog(@"%d", autoHiddenCount);
   if (autoHiddenCount == 7) {
     [self hiddenActionView];
     autoHiddenCount = 0;
@@ -292,7 +292,6 @@ static int seekTime = 0;
   controlViewHideTime++;
 //  NSLog(@"--->%d", controlViewHideTime);
   if (_playerItem.duration.timescale != 0) {
-    
     CMTime currentTime = self.player.currentTime;
     CMTime duration    = self.playerItem.duration;
     _controlView.currentTime = CMTimeGetSeconds(currentTime);
@@ -309,7 +308,6 @@ static int seekTime = 0;
     controlViewHideTime = 0;
     [self hiddenActionView];
   }
-  
 }
 
 #pragma mark -
@@ -326,7 +324,6 @@ static int seekTime = 0;
   CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
   CGFloat currentTime = total * slideView.value;
   NSInteger time = floorf(currentTime);
-
   [_player seekToTime:CMTimeMake(time, 1)];
 }
 
@@ -351,66 +348,52 @@ static int seekTime = 0;
 - (void)videoViewDidBeginPan
 {
   _isPlayingBeforeDrag = !_controlView.playButton.selected;
+  _currentTime = CMTimeGetSeconds(_player.currentTime);
 }
 
 - (void)videoViewDidHorizontalPanning:(CGFloat)x
 {
-  _isPlayingBeforeDrag = !_controlView.playButton.selected;
   [self pause];
   
   autoHiddenCount = 0;
   CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
   if (total > 0) {
 //    CGFloat currentTime = total * x / (10 * 2048.0);
-    CGFloat increTime = total * x / (10 * 2048.0);
+    CGFloat increTime = total * x / (20 * 2048.0);
+    _currentTime = _currentTime + increTime;
     
-    CGFloat time = increTime + CMTimeGetSeconds(_player.currentTime);
-    if (currentTime == CMTimeGetSeconds(_player.currentTime)) {
-      time = seekTime + 1;
+    if (_currentTime < 0) {
+      _currentTime = 0;
     }
-    //      NSInteger time = floorf(currentTime + CMTimeGetSeconds(_player.currentTime));
-    currentTime = CMTimeGetSeconds(_player.currentTime);
-    seekTime = time;
-
-    if (time < 0) {
-      time = 0;
+    if (_currentTime > total) {
+      _currentTime = total;
     }
-    if (time > total) {
-      time = total;
-    }
-    [_player seekToTime:CMTimeMake(time, 1)completionHandler:^(BOOL finished) {
-      if (_isPlayingBeforeDrag) {
-        [self play];
-      }
-    }];
+//    NSLog(@"+++++++++%f++++%f", CMTimeGetSeconds(_playerItem.currentTime), increTime);
+    [_player seekToTime:CMTimeMake(floorf(_currentTime), 1)];
   }
 }
 
 - (void)videoViewDidEndHorizontalPan:(CGFloat)x
 {
 //  if (_player.status == AVPlayerStatusReadyToPlay) {
-//    CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
-//    if (total > 0) {
-//      CGFloat increTime = total * x / (10 * 2048.0);
-//      
-//      
-//      CGFloat time = increTime + CMTimeGetSeconds(_player.currentTime);
-//      if (currentTime == CMTimeGetSeconds(_player.currentTime)) {
-//        time = seekTime + 1;
-//      }
-////      NSInteger time = floorf(currentTime + CMTimeGetSeconds(_player.currentTime));
-//      
-//      
-//      currentTime = CMTimeGetSeconds(_player.currentTime);
-//      seekTime = time;
-//
-////      NSLog(@"%f+++%f+++%f", increTime, CMTimeGetSeconds(_player.currentTime), time);
-//      [_player seekToTime:CMTimeMake(time, 1)completionHandler:^(BOOL finished) {
-//        if (_isPlayingBeforeDrag) {
-//          [self play];
-//        }
-//      }];
-//    }
+    CGFloat total = _playerItem.duration.value / _playerItem.duration.timescale;
+    if (total > 0) {
+      CGFloat increTime = total * x / (10 * 2048.0);
+      _currentTime = _currentTime + increTime;
+      
+      if (_currentTime < 0) {
+        _currentTime = 0;
+      }
+      if (_currentTime > total) {
+        _currentTime = total;
+      }
+      //      NSLog(@"%f+++%f+++%f", increTime, CMTimeGetSeconds(_player.currentTime), time);
+      [_player seekToTime:CMTimeMake(floorf(_currentTime), 1)completionHandler:^(BOOL finished) {
+        if (_isPlayingBeforeDrag) {
+          [self play];
+        }
+      }];
+    }
 //  }
 }
 
@@ -443,6 +426,27 @@ static int seekTime = 0;
 - (void)videoViewDidEndVerticalPan:(CGFloat)y
 {
   
+}
+
+#pragma mark -
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context
+{
+  if ([keyPath isEqualToString:@"loadedTimeRanges"]) {
+    NSTimeInterval timeInterval = [self availableDuration];// 计算缓冲进度
+    //        NSLog(@"Time Interval:%f",timeInterval);
+    CMTime duration = self.playerItem.duration;
+    CGFloat totalDuration = CMTimeGetSeconds(duration);
+    [self.controlView.progress setProgress:timeInterval / totalDuration animated:NO];
+  }
+}
+
+- (NSTimeInterval)availableDuration {
+  NSArray *loadedTimeRanges = [[_player currentItem] loadedTimeRanges];
+  CMTimeRange timeRange = [loadedTimeRanges.firstObject CMTimeRangeValue];// 获取缓冲区域
+  float startSeconds = CMTimeGetSeconds(timeRange.start);
+  float durationSeconds = CMTimeGetSeconds(timeRange.duration);
+  NSTimeInterval result = startSeconds + durationSeconds;// 计算缓冲总进度
+  return result;
 }
 
 
@@ -484,9 +488,15 @@ static int seekTime = 0;
 
 - (void)dealloc
 {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
+                                                object:nil];
   
   [_tapHandler invalidate];
+  [_timer invalidate];
+  [_hiddenTimer invalidate];
+  
+  _panHandler.delegate = nil;
 }
 
 @end

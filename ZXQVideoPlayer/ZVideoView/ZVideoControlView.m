@@ -9,9 +9,12 @@
 #import "ZVideoControlView.h"
 #import "ZVideoSliderView.h"
 #import "ZVideoUtilities.h"
+#import <AVFoundation/AVFoundation.h>
+@interface ZVideoControlView ()
+
+@end
 
 @implementation ZVideoControlView
-
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -30,11 +33,18 @@
 - (void)initSlider
 {
   CGFloat y = CGRectGetHeight(self.frame) - 28;
+  
+  // 缓冲区
+  self.progress = [[UIProgressView alloc] initWithFrame:
+                   CGRectMake(102, y + 2, self.frame.size.width - 234, kVideoSlideHeight)];
+  [self addSubview:_progress];
+
   _slideView = [[ZVideoSliderView alloc] initWithFrame:
               CGRectMake(100, y, self.frame.size.width - 230, kVideoSlideHeight)];
   _slideView.value = 0.0;
   [self addSubview:_slideView];
 
+  [self customVideoSlider];
 }
 
 #pragma mark 播放和下一首按钮
@@ -43,18 +53,12 @@
   _playButton = [UIButton buttonWithType:UIButtonTypeCustom];
   _playButton.frame = CGRectMake(15, CGRectGetHeight(self.frame) - 40, 30, 30);
   [self addSubview:_playButton];
-  if (_rate == 1.0) {
-    
-    [_playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"] forState:UIControlStateNormal];
-  } else {
-    [_playButton setBackgroundImage:[UIImage imageNamed:@"playBtn@2x.png"] forState:UIControlStateNormal];
-    
-  }
   
   _forwardButton = [UIButton buttonWithType:UIButtonTypeCustom];
   _forwardButton.frame = CGRectMake(60, CGRectGetHeight(self.frame) - 38, 25, 25);
   [self addSubview:_forwardButton];
-  [_forwardButton setBackgroundImage:[UIImage imageNamed:@"nextPlayer@3x.png"] forState:UIControlStateNormal];
+  [_forwardButton setBackgroundImage:[UIImage imageNamed:@"nextPlayer@3x.png"]
+                            forState:UIControlStateNormal];
   
   
 }
@@ -70,6 +74,17 @@
   _currentTimeLabel.font = [UIFont systemFontOfSize:12];
   _currentTimeLabel.text = @"00:00:00/00:00:00";
   
+}
+
+#pragma mark UISlider自定义
+- (void)customVideoSlider {
+  UIGraphicsBeginImageContextWithOptions((CGSize){ 1, 1 }, NO, 0.0f);
+  UIImage *transparentImage = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+  
+//  [self.slideView.slider setMinimumTrackTintColor:[UIColor col]];
+  //    [self.slider setMinimumTrackImage:transparentImage forState:UIControlStateNormal];
+  [self.slideView setMaximumTrackImage:transparentImage forState:UIControlStateNormal];
 }
 
 #pragma mark -
@@ -123,7 +138,7 @@
   _slideView.frame = CGRectMake(100, y, self.frame.size.width - 230, kVideoSlideHeight);
   _playButton.frame = CGRectMake(15, CGRectGetHeight(self.frame) - 40, 30, 30);
   _forwardButton.frame = CGRectMake(60, CGRectGetHeight(self.frame) - 38, 25, 25);
-  
+  _progress.frame = CGRectMake(102, y + 2, self.frame.size.width - 234, kVideoSlideHeight);
   UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
   if (UIInterfaceOrientationPortrait == orientation) {
     

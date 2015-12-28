@@ -62,5 +62,15 @@
   [_view removeGestureRecognizer:_doubleTap];
 }
 
+#pragma mark -
+#pragma mark UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+  CGPoint point = [gestureRecognizer locationInView:self.view];
+  BOOL inControlView = CGRectContainsPoint(_view.controlView.frame, point);
+  BOOL inNaviView    = CGRectContainsPoint(_view.naviBack.frame, point);
+  return !(inControlView) && !(inNaviView);
+}
+
 
 @end

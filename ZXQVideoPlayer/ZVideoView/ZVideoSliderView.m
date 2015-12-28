@@ -10,8 +10,6 @@
 
 @interface ZVideoSliderView ()
 
-@property (nonatomic, strong) UISlider *slider;
-
 @end
 
 @implementation ZVideoSliderView
@@ -24,7 +22,10 @@
     _slider = [[UISlider alloc] initWithFrame:self.bounds];
     [_slider setThumbImage:[UIImage imageNamed:@"iconfont-yuan"] forState:UIControlStateNormal];
     
-    _slider.minimumTrackTintColor = [UIColor colorWithRed:30 / 255.0 green:80 / 255.0 blue:100 / 255.0 alpha:1];
+    _slider.minimumTrackTintColor = [UIColor colorWithRed:76  / 255.0
+                                                    green:130 / 255.0
+                                                     blue:243 / 255.0
+                                                    alpha:1];
     _slider.maximumValue = 1;
     
     [_slider addTarget:self
@@ -61,6 +62,11 @@
 - (CGFloat)value
 {
   return _slider.value;
+}
+
+- (void)setMaximumTrackImage:(UIImage *)image forState:(UIControlState)state
+{
+  [_slider setMaximumTrackImage:image forState:state];
 }
 
 #pragma mark -

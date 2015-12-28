@@ -30,14 +30,11 @@
 #pragma mark - 返回按钮
 - (void)initBackButton
 {
-  UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-  button.frame = CGRectMake(15, 20, 30, 30);
-  [button setBackgroundImage:[UIImage imageNamed:@"iconfont-back.png"]
+  _backButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  _backButton.frame = CGRectMake(15, 20, 30, 30);
+  [_backButton setBackgroundImage:[UIImage imageNamed:@"iconfont-back.png"]
                     forState:UIControlStateNormal];
-  [self addSubview:button];
-  [button addTarget:self
-             action:@selector(backButtonAction)
-   forControlEvents:UIControlEventTouchUpInside];
+  [self addSubview:_backButton];
 }
 
 #pragma mark - 视频标题

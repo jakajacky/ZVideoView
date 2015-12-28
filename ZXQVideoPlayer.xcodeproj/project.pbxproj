@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C37CFAF01C2D5AF500DAFD1B /* VideoPlayerContrller.m in Sources */ = {isa = PBXBuildFile; fileRef = C37CFAEF1C2D5AF500DAFD1B /* VideoPlayerContrller.m */; };
 		C3A17A0C1C2BC1F200DFD251 /* ZVideoPanHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C3A17A0B1C2BC1F200DFD251 /* ZVideoPanHandler.m */; };
 		C3B63DCF1C25D80B0056E7C5 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C3B63DCE1C25D80B0056E7C5 /* main.m */; };
 		C3B63DD21C25D80B0056E7C5 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C3B63DD11C25D80B0056E7C5 /* AppDelegate.m */; };
@@ -78,6 +79,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C37CFAEE1C2D5AF500DAFD1B /* VideoPlayerContrller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoPlayerContrller.h; sourceTree = "<group>"; };
+		C37CFAEF1C2D5AF500DAFD1B /* VideoPlayerContrller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoPlayerContrller.m; sourceTree = "<group>"; };
 		C3A17A0A1C2BC1F200DFD251 /* ZVideoPanHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZVideoPanHandler.h; sourceTree = "<group>"; };
 		C3A17A0B1C2BC1F200DFD251 /* ZVideoPanHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZVideoPanHandler.m; sourceTree = "<group>"; };
 		C3B63DCA1C25D80B0056E7C5 /* ZXQVideoPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZXQVideoPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -193,6 +196,8 @@
 				C3B63DD11C25D80B0056E7C5 /* AppDelegate.m */,
 				C3B63DD31C25D80B0056E7C5 /* ViewController.h */,
 				C3B63DD41C25D80B0056E7C5 /* ViewController.m */,
+				C37CFAEE1C2D5AF500DAFD1B /* VideoPlayerContrller.h */,
+				C37CFAEF1C2D5AF500DAFD1B /* VideoPlayerContrller.m */,
 				C3FEB4F01C25DA0600368557 /* ZVideoView */,
 				C3FEB4F71C25DB3800368557 /* Resource */,
 				C3B63DD61C25D80B0056E7C5 /* Main.storyboard */,
@@ -433,6 +438,7 @@
 				C3CBBAF11C2A7AA700B0D55E /* ZVideoTaphandler.m in Sources */,
 				C3FEB5711C25DC6B00368557 /* ZVideoSliderView.m in Sources */,
 				C3B63DD51C25D80B0056E7C5 /* ViewController.m in Sources */,
+				C37CFAF01C2D5AF500DAFD1B /* VideoPlayerContrller.m in Sources */,
 				C3FEB56E1C25DC4300368557 /* ZVideoControlView.m in Sources */,
 				C3B63DD21C25D80B0056E7C5 /* AppDelegate.m in Sources */,
 				C3B63DCF1C25D80B0056E7C5 /* main.m in Sources */,

@@ -9,21 +9,16 @@
 #import "ViewController.h"
 #import "ZVideoView.h"
 
+#import "VideoPlayerContrller.h"
 
 @interface ViewController ()
 
-@property (nonatomic, strong) ZVideoView *zView;
+@property (nonatomic, strong) VideoPlayerContrller *playerVC;
 
 @end
 
 @implementation ViewController
 
-- (void)loadView
-{
-  [super loadView];
-  _zView = [[ZVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
-  self.view = _zView;
-}
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -31,17 +26,31 @@
 //  ZVideoView *vi = [[ZVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
 //  vi.backgroundColor = [UIColor redColor];
 //  [self.view addSubview:vi];
-  NSString *path = [[NSBundle mainBundle] pathForResource:@"282M mp4" ofType:@"mp4"];
-  [_zView setPath:path];
-  [_zView setTitle:@"视频播放"];
-  _zView.backgroundColor = [UIColor whiteColor];
-  [_zView play];
+  //@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
+  
+  UIButton *b = [[UIButton alloc] initWithFrame:CGRectMake(300, 300, 50, 50)];
+  b.backgroundColor = [UIColor redColor];
+  b.titleLabel.text = @"button";
+  [self.view addSubview:b];
+  
+  [b addTarget:self action:@selector(test) forControlEvents:UIControlEventTouchUpInside];
+  
+  _playerVC = [[VideoPlayerContrller alloc] init];
+
 
 }
 
 - (void)didReceiveMemoryWarning {
   [super didReceiveMemoryWarning];
   // Dispose of any resources that can be recreated.
+}
+
+- (void)test
+{
+  _playerVC = [[VideoPlayerContrller alloc] init];
+  [self presentViewController:_playerVC animated:YES completion:^{
+    
+  }];
 }
 
 @end
