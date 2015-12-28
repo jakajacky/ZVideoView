@@ -59,12 +59,12 @@
   }
   else if (x < y && locationPoint.x <= 5 && locationPoint.x >= -5) { // 纵向滑动
     if (self.delegate && [self.delegate respondsToSelector:@selector(videoViewDidVerticalPanning:)]) {
-      [self.delegate videoViewDidVerticalPanning:locationPoint.y];
+      [self.delegate videoViewDidVerticalPanning:locationPoint.y * -1];
     }
     
     if (sender.state == UIGestureRecognizerStateEnded) {
       if (self.delegate && [self.delegate respondsToSelector:@selector(videoViewDidEndVerticalPan:)]) {
-        [self.delegate videoViewDidEndVerticalPan:locationPoint.y];
+        [self.delegate videoViewDidEndVerticalPan:locationPoint.y * -1];
       }
     }
   }
