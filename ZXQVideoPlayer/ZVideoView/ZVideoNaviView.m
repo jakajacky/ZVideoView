@@ -20,6 +20,8 @@
 {
   self = [super initWithFrame:frame];
   if (self) {
+    self.backgroundColor = [UIColor colorWithWhite:0.122 alpha:0.5];
+    
     [self initBackButton];
     [self initTitleLabel];
   }

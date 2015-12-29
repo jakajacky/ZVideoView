@@ -20,7 +20,8 @@
 {
   self = [super initWithFrame:frame];
   if (self) {
-
+    self.backgroundColor = [UIColor colorWithWhite:0.122 alpha:0.5];
+    
     [self initSlider];
     [self initButton];
     [self initCurrentTimeLabel];
@@ -39,6 +40,7 @@
                    CGRectMake(102, y + 2, self.frame.size.width - 234, kVideoSlideHeight)];
   [self addSubview:_progress];
 
+  // 进度条
   _slideView = [[ZVideoSliderView alloc] initWithFrame:
               CGRectMake(100, y, self.frame.size.width - 230, kVideoSlideHeight)];
   _slideView.value = 0.0;
@@ -67,7 +69,7 @@
 - (void)initCurrentTimeLabel
 {
   _currentTimeLabel = [[UILabel alloc]initWithFrame:
-            CGRectMake(self.frame.size.width *0.88 - 25, CGRectGetHeight(self.frame) - 35.5, 150, 20)];
+            CGRectMake(self.frame.size.width *0.88, CGRectGetHeight(self.frame) - 35.5, 150, 20)];
   [self addSubview:_currentTimeLabel];
   _currentTimeLabel.textColor = [UIColor whiteColor];
   //    _currentTimeLabel.backgroundColor = [UIColor blueColor];
@@ -122,12 +124,6 @@
   else {
     _slideView.value = 0;
   }
-}
-
-#pragma mark 设置进度
-- (void)setValue:(CGFloat)value
-{
-  _slideView.value = value;
 }
 
 #pragma mark -

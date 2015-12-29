@@ -45,10 +45,11 @@
 //  _zView = [[ZVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
 //  [self.view addSubview:_zView];
   
-  NSString *path = [[NSBundle mainBundle] pathForResource:@"123" ofType:@"mp4"];
+  NSString *path = [[NSBundle mainBundle] pathForResource:@"282M mp4" ofType:@"mp4"];
+  
   [_zView setPath:@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"];
   [_zView setTitle:@"视频播放"];
-  _zView.backgroundColor = [UIColor whiteColor];
+  _zView.VideoBackgroundColor = [UIColor blackColor];
   [_zView play];
   
   _zView.delegate = self;
@@ -62,12 +63,25 @@
   }];
 }
 
-
-
 - (void)dealloc
 {
   _zView.delegate = nil;
   _zView = nil;
 }
+
+//#pragma mark 只支持横屏
+//-(UIInterfaceOrientation)preferredInterfaceOrientationForPresentation {
+//  return UIInterfaceOrientationLandscapeRight;
+//}
+//
+//- (BOOL)shouldAutorotate
+//{
+//  return NO;
+//}
+//
+//- (UIInterfaceOrientationMask)supportedInterfaceOrientations
+//{
+//  return UIInterfaceOrientationMaskLandscape;
+//}
 
 @end

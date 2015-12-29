@@ -20,7 +20,7 @@
   self = [super initWithFrame:frame];
   if (self) {
     _slider = [[UISlider alloc] initWithFrame:self.bounds];
-    [_slider setThumbImage:[UIImage imageNamed:@"iconfont-yuan"] forState:UIControlStateNormal];
+    [_slider setThumbImage:[UIImage imageNamed:@"iconfont-yuan1"] forState:UIControlStateNormal];
     
     _slider.minimumTrackTintColor = [UIColor colorWithRed:76  / 255.0
                                                     green:130 / 255.0

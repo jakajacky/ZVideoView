@@ -27,9 +27,7 @@
 
 @property (nonatomic, assign) id <ZVideoSliderViewDelegate> delegate;
 
-@property(nonatomic) CGFloat trackHeight;
-
-@property(nonatomic) CGFloat value;
+@property (nonatomic, assign) CGFloat value;
 
 - (void)setMaximumTrackImage:(UIImage *)image forState:(UIControlState)state;
 

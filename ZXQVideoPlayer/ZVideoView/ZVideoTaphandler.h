@@ -17,9 +17,3 @@
 - (void)invalidate;
 
 @end
-
-@interface ZVideoTaphandler (Unavailable)
-
-- (id)init UNAVAILABLE_ATTRIBUTE;
-
-@end

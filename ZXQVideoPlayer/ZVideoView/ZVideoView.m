@@ -27,17 +27,17 @@
 
 @property (nonatomic, assign) CGFloat           height;             // 坐标
 
-@property (nonatomic, strong) ZVideoTaphandler  *tapHandler;        // tap手势
+@property (nonatomic, strong) ZVideoTaphandler  *tapHandler;        // 轻拍手势
 
-@property (nonatomic, strong) ZVideoPanHandler  *panHandler;        // swipe手势
+@property (nonatomic, strong) ZVideoPanHandler  *panHandler;        // 滑动手势
 
-@property (nonatomic, assign) BOOL              isPlayingBeforeDrag;//滑动前是否是播放状态
+@property (nonatomic, assign) BOOL              isPlayingBeforeDrag;// 滑动前是否是播放状态
 
-@property (nonatomic, strong) NSTimer           *timer;             // 进度时间器
+@property (nonatomic, strong) NSTimer           *timer;             // 进度计时器、播放中自动隐藏控制台计数
 
-@property (nonatomic, strong) NSTimer           *hiddenTimer;       // 用于自动隐藏控制台的计数器
+@property (nonatomic, strong) NSTimer           *hiddenTimer;       // 暂停后自动隐藏控制台的计时器
 
-@property (nonatomic, strong) UISlider          *volumeSlider;      // 系统音量
+@property (nonatomic, strong) UISlider          *volumeSlider;      // 获取系统音量
 
 @end
 
@@ -55,17 +55,24 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   if (self) {
     _width = self.frame.size.width;
     _height = self.frame.size.height;
-    
+
     [self initPlayer];
     [self initControlView];
     [self initNaviBackView];
     [self initGesture];
     [self initTimer];
     
+    // 屏幕旋转通知
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(statusBarChanged:)
                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
                                                object:nil];
+    
+    //AVPlayer播放完成通知
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(moviePlayDidEnd:)
+                                                 name:AVPlayerItemDidPlayToEndTimeNotification
+                                               object:_player.currentItem];
   }
   return self;
 }
@@ -76,10 +83,11 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   // 创建AVPlayer
   _currentVolume = 0; // 初始化音量
   self.player = [[AVPlayer alloc] init];
-  
+
   _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
   _playerLayer.frame = CGRectMake(0, 0, _width, _height);
-  _playerLayer.videoGravity = AVLayerVideoGravityResize;
+  _playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;  // 适配视频
+  _playerLayer.backgroundColor = (__bridge CGColorRef _Nullable)([UIColor blackColor]);
   [self.layer addSublayer:_playerLayer];
   
 }
@@ -163,6 +171,12 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   _naviBack.title = title;
 }
 
+#pragma mark 设置背景色
+- (void)setVideoBackgroundColor:(UIColor *)VideoBackgroundColor
+{
+  self.backgroundColor = VideoBackgroundColor;
+}
+
 #pragma mark - 
 #pragma mark 响应播放事件
 - (void)playOrPause
@@ -231,20 +245,20 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   }
 }
 
-#pragma mark 响应双击事件
-- (void)doubleTapAction
-{
-  controlViewHideTime = 0;
-  autoHiddenCount = 0;
-  [self playOrPause];
-}
-
 #pragma mark 关闭
 - (void)didCloseVideoView:(UIButton *)sender
 {
   if (_delegate && [_delegate respondsToSelector:@selector(videoView:didCloseAtTime:)]) {
     [_delegate videoView:self didCloseAtTime:0];
     [self stop];
+  }
+}
+
+#pragma mark 播放完成
+- (void)moviePlayDidEnd:(NSNotification *)noti
+{
+  if (_delegate && [_delegate respondsToSelector:@selector(videoViewDidFinishPlay:)]) {
+    [_delegate videoViewDidFinishPlay:self];
   }
 }
 
@@ -273,7 +287,7 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
 - (void)hiddenCount
 {
   autoHiddenCount++;
-//  NSLog(@"%d", autoHiddenCount);
+  NSLog(@"暂停后自动隐藏计数：%d", autoHiddenCount);
   if (autoHiddenCount == 7) {
     [self hiddenActionView];
     autoHiddenCount = 0;
@@ -290,13 +304,13 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
 - (void)timeRun
 {
   controlViewHideTime++;
-//  NSLog(@"--->%d", controlViewHideTime);
+  NSLog(@"播放中自动隐藏计数：%d", controlViewHideTime);
   if (_playerItem.duration.timescale != 0) {
     CMTime currentTime = self.player.currentTime;
     CMTime duration    = self.playerItem.duration;
-    _controlView.currentTime = CMTimeGetSeconds(currentTime);
-    _controlView.duration    = duration.value / duration.timescale;
-    _controlView.value       = _controlView.currentTime / _controlView.duration;//当前进度
+    _controlView.currentTime     = CMTimeGetSeconds(currentTime);
+    _controlView.duration        = duration.value / duration.timescale;
+    _controlView.slideView.value = _controlView.currentTime / _controlView.duration;//当前进度
     
   }
   if (_player.status == AVPlayerStatusReadyToPlay) {
@@ -429,6 +443,7 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
 }
 
 #pragma mark -
+#pragma mark 计算缓冲进度
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context
 {
   if ([keyPath isEqualToString:@"loadedTimeRanges"]) {
@@ -458,6 +473,8 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   _height = self.frame.size.height;
   CGFloat y;
   
+  self.backgroundColor = [UIColor blackColor];
+  
   UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
   if (UIInterfaceOrientationPortrait == orientation) {
     
@@ -475,7 +492,6 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
     
   }
   _controlView.frame = CGRectMake(0, y, self.frame.size.width, kVideoControlHeight);
-  _controlView.backgroundColor = [UIColor redColor];
   _naviBack.frame    = CGRectMake(0, 0, self.frame.size.width, kVideoNaviHeight);
 }
 
@@ -493,10 +509,10 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
                                                 object:nil];
   
   [_tapHandler invalidate];
+  [_panHandler invalidate];
+  
   [_timer invalidate];
   [_hiddenTimer invalidate];
-  
-  _panHandler.delegate = nil;
 }
 
 @end

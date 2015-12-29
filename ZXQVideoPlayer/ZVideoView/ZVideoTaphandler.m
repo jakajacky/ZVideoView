@@ -50,7 +50,7 @@
 
 - (void)doubleTapAction:(UITapGestureRecognizer *)sender
 {
-  [_view doubleTapAction];
+  [_view playOrPause];
 }
 
 - (void)invalidate
