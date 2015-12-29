@@ -68,6 +68,11 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
                                                  name:UIApplicationDidChangeStatusBarOrientationNotification
                                                object:nil];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(enterBackground:)
+                                                 name:UIApplicationDidEnterBackgroundNotification
+                                               object:nil];
+    
     //AVPlayer播放完成通知
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(moviePlayDidEnd:)
@@ -86,7 +91,7 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
 
   _playerLayer = [AVPlayerLayer playerLayerWithPlayer:_player];
   _playerLayer.frame = CGRectMake(0, 0, _width, _height);
-  _playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;  // 适配视频
+  _playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;  // 适配视频尺寸
   _playerLayer.backgroundColor = (__bridge CGColorRef _Nullable)([UIColor blackColor]);
   [self.layer addSublayer:_playerLayer];
   
@@ -186,7 +191,7 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   } else {
     [self pause];
   }
-  _controlView.playButton.selected =!_controlView.playButton.selected;
+  
 }
 - (void)play
 {
@@ -194,6 +199,7 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   autoHiddenCount = 0;
   [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"pauseBtn@2x.png"]
                                      forState:UIControlStateNormal];
+  _controlView.playButton.selected =!_controlView.playButton.selected;
   
   if (![_timer isValid]) {
     [self initTimer];
@@ -211,6 +217,7 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   autoHiddenCount = 0;
   [_controlView.playButton setBackgroundImage:[UIImage imageNamed:@"playBtn@2x.png"]
                                      forState:UIControlStateNormal];
+  _controlView.playButton.selected =!_controlView.playButton.selected;
   
   [_timer invalidate];
   
@@ -259,6 +266,14 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
 {
   if (_delegate && [_delegate respondsToSelector:@selector(videoViewDidFinishPlay:)]) {
     [_delegate videoViewDidFinishPlay:self];
+  }
+}
+
+#pragma mark 进入后台
+- (void)enterBackground:(NSNotification *)noti
+{
+  if (_player.rate == 1) {
+    [self pause];
   }
 }
 
