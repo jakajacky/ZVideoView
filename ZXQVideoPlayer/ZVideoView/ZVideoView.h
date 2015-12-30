@@ -33,6 +33,10 @@
 
 @interface ZVideoView : UIView
 
+@property (nonatomic, strong  ) NSString           *path;                 // 资源路径
+
+@property (nonatomic, strong  ) NSString           *title;                 // 视频标题
+
 @property (nonatomic, strong  ) ZVideoControlView  *controlView;          // 控制台
 
 @property (nonatomic, strong  ) ZVideoNaviView     *naviBack;             // 返回
@@ -45,6 +49,8 @@
 
 @property (nonatomic, readonly) CGFloat            rate;                  // 1:playing 0:pause
 
+@property (nonatomic, getter = isSupportPictureInPicture) BOOL supportPictureInpicture;// 是否支持画中画,默认不支持
+
 @property (nonatomic, assign  ) id <ZVideoViewDelegate> delegate;
 
 - (void)play;                          // 播放
@@ -53,9 +59,9 @@
 
 - (void)stop;                          // 停止
 
-- (void)setPath:(NSString *)path;      // 设置资源路径
-
-- (void)setTitle:(NSString *)title;    // 设置视频标题
+//- (void)setPath:(NSString *)path;      // 设置资源路径
+//
+//- (void)setTitle:(NSString *)title;    // 设置视频标题
 
 
 - (void)showActionView;                // 显示控制台

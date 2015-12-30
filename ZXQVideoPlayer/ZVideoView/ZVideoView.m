@@ -77,7 +77,6 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
     [self initTimer];
     [self initNotification];
     
-    [self initPicInPicViewController];
   }
   return self;
 }
@@ -221,6 +220,24 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
 {
   self.backgroundColor = VideoBackgroundColor;
 }
+
+#pragma mark 设置是否支持画中画
+- (void)setSupportPictureInpicture:(BOOL)supportPictureInpicture
+{
+  if (supportPictureInpicture) {
+    [self initPicInPicViewController];
+    _naviBack.pipButton.enabled = YES;
+    
+    // 取消后台暂停通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIApplicationDidEnterBackgroundNotification
+                                                  object:nil];
+  }
+  else {
+    _naviBack.pipButton.enabled = NO;
+  }
+}
+
 
 #pragma mark - 
 #pragma mark 响应播放事件
