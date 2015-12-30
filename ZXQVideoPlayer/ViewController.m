@@ -47,10 +47,12 @@
 
 - (void)test
 {
-  _playerVC = [[VideoPlayerContrller alloc] init];
-  [self presentViewController:_playerVC animated:YES completion:^{
-    
-  }];
+  _playerVC.vc = self;
+  if (_playerVC.zView.rate == 0) {
+    [self presentViewController:_playerVC animated:YES completion:^{
+      
+    }];
+  }
 }
 
 @end

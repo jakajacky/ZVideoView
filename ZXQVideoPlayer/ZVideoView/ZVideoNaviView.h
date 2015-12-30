@@ -14,4 +14,6 @@
 
 @property (nonatomic, strong) UIButton *backButton;
 
+@property (nonatomic, strong) UIButton *pipButton;
+
 @end

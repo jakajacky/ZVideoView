@@ -7,12 +7,8 @@
 //
 
 #import "VideoPlayerContrller.h"
-#import "ZVideoView.h"
-
 
 @interface VideoPlayerContrller () <ZVideoViewDelegate>
-
-@property (nonatomic, strong) ZVideoView *zView;
 
 @end
 
@@ -61,6 +57,22 @@
   [self dismissViewControllerAnimated:YES completion:^{
     
   }];
+}
+
+// 下面是关于画中画得代理，目的是：开始画中画时，关掉原视频VideoPlayerController，结束画中画时，还原原来的VideoPlayerController,并继续播放
+// 如果不实现这几个代理，效果是：开始画中画后，VideoPlayerController还在，只是视频的playerLayer在画中画中，留下一个系统的layer；
+
+- (void)pictureInPictureControllerDidStartPictureInPicture:(AVPictureInPictureController *)pictureInPictureController
+{
+  NSLog(@"开始");
+  [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)pictureInPictureControllerDidStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController
+{
+  NSLog(@"完成");
+  [_vc presentViewController:self animated:YES completion:nil];
+  [_zView play];
 }
 
 - (void)dealloc

@@ -12,32 +12,38 @@
 
 #import "ZVideoTaphandler.h"
 #import "ZVideoPanHandler.h"
+#import "ZVideoPIPViewControllerDelegate.h"
 
 #define kIsPlayLocalVideo 0
 
-@interface ZVideoView () <ZVideoSliderViewDelegate, ZVideoPanHandlerDelegate>
+@interface ZVideoView ()
+<ZVideoSliderViewDelegate, ZVideoPanHandlerDelegate, AVPictureInPictureControllerDelegate>
 
-@property (nonatomic, strong) AVPlayer          *player;            // 播放属性
+@property (nonatomic, strong) AVPlayer                     *player;            // 播放属性
 
-@property (nonatomic, strong) AVPlayerItem      *playerItem;
+@property (nonatomic, strong) AVPlayerItem                 *playerItem;
 
-@property (nonatomic, strong) AVPlayerLayer     *playerLayer;
+@property (nonatomic, strong) AVPlayerLayer                *playerLayer;
 
-@property (nonatomic, assign) CGFloat           width;              // 坐标
+@property (nonatomic, assign) CGFloat                      width;              // 坐标
 
-@property (nonatomic, assign) CGFloat           height;             // 坐标
+@property (nonatomic, assign) CGFloat                      height;             // 坐标
 
-@property (nonatomic, strong) ZVideoTaphandler  *tapHandler;        // 轻拍手势
+@property (nonatomic, strong) ZVideoTaphandler             *tapHandler;        // 轻拍手势
 
-@property (nonatomic, strong) ZVideoPanHandler  *panHandler;        // 滑动手势
+@property (nonatomic, strong) ZVideoPanHandler             *panHandler;        // 滑动手势
 
-@property (nonatomic, assign) BOOL              isPlayingBeforeDrag;// 滑动前是否是播放状态
+@property (nonatomic, assign) BOOL                         isPlayingBeforeDrag;// 滑动前是否是播放状态
 
-@property (nonatomic, strong) NSTimer           *timer;             // 进度计时器、播放中自动隐藏控制台计数
+@property (nonatomic, strong) NSTimer                      *timer;// 进度计时器、播放中自动隐藏控制台计数
 
-@property (nonatomic, strong) NSTimer           *hiddenTimer;       // 暂停后自动隐藏控制台的计时器
+@property (nonatomic, strong) NSTimer                      *hiddenTimer; // 暂停后自动隐藏控制台的计时器
 
-@property (nonatomic, strong) UISlider          *volumeSlider;      // 获取系统音量
+@property (nonatomic, strong) UISlider                     *volumeSlider;     // 获取系统音量
+
+@property (nonatomic, strong) AVPictureInPictureController *pipViewController;// 画中画
+
+@property (nonatomic, strong) ZVideoPIPViewControllerDelegate *pipDelegate;
 
 @end
 
@@ -55,29 +61,23 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   if (self) {
     _width = self.frame.size.width;
     _height = self.frame.size.height;
+    
+    
+    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+    NSError *error = nil;
+    [audioSession setCategory:AVAudioSessionCategoryPlayback error:&error];
+    if (error) {
+      NSLog(@"error = %@",[error description]);
+    }
 
     [self initPlayer];
     [self initControlView];
     [self initNaviBackView];
     [self initGesture];
     [self initTimer];
+    [self initNotification];
     
-    // 屏幕旋转通知
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(statusBarChanged:)
-                                                 name:UIApplicationDidChangeStatusBarOrientationNotification
-                                               object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(enterBackground:)
-                                                 name:UIApplicationDidEnterBackgroundNotification
-                                               object:nil];
-    
-    //AVPlayer播放完成通知
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(moviePlayDidEnd:)
-                                                 name:AVPlayerItemDidPlayToEndTimeNotification
-                                               object:_player.currentItem];
+    [self initPicInPicViewController];
   }
   return self;
 }
@@ -129,7 +129,15 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   _naviBack = [[ZVideoNaviView alloc] initWithFrame:
                CGRectMake(0, 0, self.frame.size.width, kVideoNaviHeight)];
 
-  [_naviBack.backButton addTarget:self action:@selector(didCloseVideoView:) forControlEvents:UIControlEventTouchUpInside];
+  [_naviBack.backButton addTarget:self
+                           action:@selector(didCloseVideoView:)
+                 forControlEvents:UIControlEventTouchUpInside];
+  
+  // 画中画开关
+  [_naviBack.pipButton addTarget:self
+                           action:@selector(didOpenPipMode)
+                 forControlEvents:UIControlEventTouchUpInside];
+  
   [self addSubview:_naviBack];
 }
 
@@ -150,6 +158,38 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
                                           selector:@selector(timeRun)
                                           userInfo:nil
                                            repeats:YES];
+}
+
+#pragma mark 创建Notification
+- (void)initNotification
+{
+  // 屏幕旋转通知
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(statusBarChanged:)
+                                               name:UIApplicationDidChangeStatusBarOrientationNotification
+                                             object:nil];
+  
+  // 后台通知
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(enterBackground:)
+                                               name:UIApplicationDidEnterBackgroundNotification
+                                             object:nil];
+  
+  //AVPlayer播放完成通知
+  [[NSNotificationCenter defaultCenter] addObserver:self
+                                           selector:@selector(moviePlayDidEnd:)
+                                               name:AVPlayerItemDidPlayToEndTimeNotification
+                                             object:_player.currentItem];
+}
+
+#pragma mark 创建画中画VC
+- (void)initPicInPicViewController
+{
+  _pipViewController = [[AVPictureInPictureController alloc] initWithPlayerLayer:_playerLayer];
+  _pipDelegate = [[ZVideoPIPViewControllerDelegate alloc] init];
+  _pipViewController.delegate = _pipDelegate;
+  _pipDelegate.view = self;
+  [_pipViewController startPictureInPicture];
 }
 
 #pragma mark -
@@ -261,6 +301,12 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
   }
 }
 
+#pragma mark 开启画中画
+- (void)didOpenPipMode
+{
+  [_pipViewController startPictureInPicture];
+}
+
 #pragma mark 播放完成
 - (void)moviePlayDidEnd:(NSNotification *)noti
 {
@@ -337,6 +383,12 @@ static int autoHiddenCount     = 0;// timer停止（player暂停），hiddenTime
     controlViewHideTime = 0;
     [self hiddenActionView];
   }
+}
+
+#pragma mark 播放状态
+- (CGFloat)rate
+{
+  return _player.rate;
 }
 
 #pragma mark -

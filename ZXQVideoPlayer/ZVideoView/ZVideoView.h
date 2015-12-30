@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <AVKit/AVKit.h>
+
 #import "ZVideoControlView.h"
 #import "ZVideoNaviView.h"
 #define kVideoNaviHeight 64
@@ -18,6 +20,14 @@
 - (void)videoView:(ZVideoView *)videoView didCloseAtTime:(NSTimeInterval)time;
 - (void)videoViewDidStartCall:(ZVideoView *)videoView;
 - (void)videoViewDidFinishPlay:(ZVideoView *)videoView;
+
+// 画中画响应事件，用于自定义画中画的开始和结束时响应的事件
+- (void)pictureInPictureController:(AVPictureInPictureController *)pictureInPictureController failedToStartPictureInPictureWithError:(NSError *)error;
+- (void)pictureInPictureController:(AVPictureInPictureController *)pictureInPictureController restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL))completionHandler;
+- (void)pictureInPictureControllerDidStartPictureInPicture:(AVPictureInPictureController *)pictureInPictureController;
+- (void)pictureInPictureControllerDidStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController;
+- (void)pictureInPictureControllerWillStartPictureInPicture:(AVPictureInPictureController *)pictureInPictureController;
+- (void)pictureInPictureControllerWillStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController;
 
 @end
 
@@ -32,6 +42,8 @@
 @property (nonatomic, readonly) CGFloat            currentTime;           // 当前播放时间
 
 @property (nonatomic, strong  ) UIColor            *VideoBackgroundColor; // 视频背景色
+
+@property (nonatomic, readonly) CGFloat            rate;                  // 1:playing 0:pause
 
 @property (nonatomic, assign  ) id <ZVideoViewDelegate> delegate;
 

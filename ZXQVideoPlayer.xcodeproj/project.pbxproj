@@ -17,6 +17,7 @@
 		C3B63DDD1C25D80B0056E7C5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C3B63DDB1C25D80B0056E7C5 /* LaunchScreen.storyboard */; };
 		C3C5234A1C32791F003DB16F /* iconfont-yuan1@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C3C523491C32791F003DB16F /* iconfont-yuan1@2x.png */; };
 		C3CBBAF11C2A7AA700B0D55E /* ZVideoTaphandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C3CBBAF01C2A7AA700B0D55E /* ZVideoTaphandler.m */; };
+		C3DD64261C33DB270099893C /* ZVideoPIPViewControllerDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DD64251C33DB270099893C /* ZVideoPIPViewControllerDelegate.m */; };
 		C3FEB5311C25DB3800368557 /* @$91X`{7~B}~XP0C[DG~XDI.jpg in Resources */ = {isa = PBXBuildFile; fileRef = C3FEB4F81C25DB3800368557 /* @$91X`{7~B}~XP0C[DG~XDI.jpg */; };
 		C3FEB5321C25DB3800368557 /* bg_share_large.png in Resources */ = {isa = PBXBuildFile; fileRef = C3FEB4F91C25DB3800368557 /* bg_share_large.png */; };
 		C3FEB5331C25DB3800368557 /* bg_share_large@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C3FEB4FA1C25DB3800368557 /* bg_share_large@2x.png */; };
@@ -98,6 +99,8 @@
 		C3CBBAEF1C2A7AA700B0D55E /* ZVideoTaphandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZVideoTaphandler.h; sourceTree = "<group>"; };
 		C3CBBAF01C2A7AA700B0D55E /* ZVideoTaphandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZVideoTaphandler.m; sourceTree = "<group>"; };
 		C3CCD0401C293EF500F4D8CB /* ZVideoUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZVideoUtilities.h; sourceTree = "<group>"; };
+		C3DD64241C33DB270099893C /* ZVideoPIPViewControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZVideoPIPViewControllerDelegate.h; sourceTree = "<group>"; };
+		C3DD64251C33DB270099893C /* ZVideoPIPViewControllerDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZVideoPIPViewControllerDelegate.m; sourceTree = "<group>"; };
 		C3FEB4F81C25DB3800368557 /* @$91X`{7~B}~XP0C[DG~XDI.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "@$91X`{7~B}~XP0C[DG~XDI.jpg"; sourceTree = "<group>"; };
 		C3FEB4F91C25DB3800368557 /* bg_share_large.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bg_share_large.png; sourceTree = "<group>"; };
 		C3FEB4FA1C25DB3800368557 /* bg_share_large@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "bg_share_large@2x.png"; sourceTree = "<group>"; };
@@ -234,6 +237,8 @@
 				C3CBBAF01C2A7AA700B0D55E /* ZVideoTaphandler.m */,
 				C3A17A0A1C2BC1F200DFD251 /* ZVideoPanHandler.h */,
 				C3A17A0B1C2BC1F200DFD251 /* ZVideoPanHandler.m */,
+				C3DD64241C33DB270099893C /* ZVideoPIPViewControllerDelegate.h */,
+				C3DD64251C33DB270099893C /* ZVideoPIPViewControllerDelegate.m */,
 				C3CCD0401C293EF500F4D8CB /* ZVideoUtilities.h */,
 			);
 			path = ZVideoView;
@@ -342,6 +347,11 @@
 				TargetAttributes = {
 					C3B63DC91C25D80B0056E7C5 = {
 						CreatedOnToolsVersion = 7.1;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -443,6 +453,7 @@
 				C3FEB5711C25DC6B00368557 /* ZVideoSliderView.m in Sources */,
 				C3B63DD51C25D80B0056E7C5 /* ViewController.m in Sources */,
 				C37CFAF01C2D5AF500DAFD1B /* VideoPlayerContrller.m in Sources */,
+				C3DD64261C33DB270099893C /* ZVideoPIPViewControllerDelegate.m in Sources */,
 				C3FEB56E1C25DC4300368557 /* ZVideoControlView.m in Sources */,
 				C3B63DD21C25D80B0056E7C5 /* AppDelegate.m in Sources */,
 				C3B63DCF1C25D80B0056E7C5 /* main.m in Sources */,
