@@ -70,11 +70,11 @@
   [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)pictureInPictureControllerDidStopPictureInPicture:(AVPictureInPictureController *)pictureInPictureController
+- (void)pictureInPictureController:(AVPictureInPictureController *)pictureInPictureController restoreUserInterfaceForPictureInPictureStopWithCompletionHandler:(void (^)(BOOL))completionHandler
 {
-  NSLog(@"完成");
   [_vc presentViewController:self animated:YES completion:nil];
   [_zView play];
+  completionHandler(YES);
 }
 
 - (void)dealloc

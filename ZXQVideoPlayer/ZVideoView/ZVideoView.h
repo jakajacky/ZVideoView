@@ -47,7 +47,7 @@
 
 @property (nonatomic, strong  ) UIColor            *VideoBackgroundColor; // 视频背景色
 
-@property (nonatomic, readonly) CGFloat            rate;                  // 1:playing 0:pause
+@property (nonatomic, readonly) CGFloat            rate;                  // 1:playing 0:pause,用于在vc中判断，再次点击视频，不会重复打开
 
 @property (nonatomic, getter = isSupportPictureInPicture) BOOL supportPictureInpicture;// 是否支持画中画,默认不支持
 
