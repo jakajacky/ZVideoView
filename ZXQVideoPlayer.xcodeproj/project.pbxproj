@@ -78,6 +78,7 @@
 		C3FEB56E1C25DC4300368557 /* ZVideoControlView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FEB56D1C25DC4300368557 /* ZVideoControlView.m */; };
 		C3FEB5711C25DC6B00368557 /* ZVideoSliderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FEB5701C25DC6B00368557 /* ZVideoSliderView.m */; };
 		C3FEB5741C25DC8200368557 /* ZVideoNaviView.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FEB5731C25DC8200368557 /* ZVideoNaviView.m */; };
+		F2D93C891D8E69AB008770C7 /* 282.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = F2D93C881D8E69AB008770C7 /* 282.mp4 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -165,6 +166,7 @@
 		C3FEB5701C25DC6B00368557 /* ZVideoSliderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZVideoSliderView.m; sourceTree = "<group>"; };
 		C3FEB5721C25DC8200368557 /* ZVideoNaviView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZVideoNaviView.h; sourceTree = "<group>"; };
 		C3FEB5731C25DC8200368557 /* ZVideoNaviView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZVideoNaviView.m; sourceTree = "<group>"; };
+		F2D93C881D8E69AB008770C7 /* 282.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 282.mp4; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -217,6 +219,7 @@
 		C3B63DCD1C25D80B0056E7C5 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				F2D93C881D8E69AB008770C7 /* 282.mp4 */,
 				C3B63DCE1C25D80B0056E7C5 /* main.m */,
 			);
 			name = "Supporting Files";
@@ -347,6 +350,7 @@
 				TargetAttributes = {
 					C3B63DC91C25D80B0056E7C5 = {
 						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = X342LX7QRW;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
 								enabled = 1;
@@ -399,6 +403,7 @@
 				C3FEB5581C25DB3800368557 /* logo.xunlei.com.png in Resources */,
 				C3FEB5471C25DB3800368557 /* logo.kankan.com@2x.png in Resources */,
 				C3FEB5431C25DB3800368557 /* logo.hunantv.com@2x.png in Resources */,
+				F2D93C891D8E69AB008770C7 /* 282.mp4 in Resources */,
 				C3FEB5571C25DB3800368557 /* logo.tudou.com@2x.png in Resources */,
 				C3FEB55C1C25DB3800368557 /* nextPlayer.png in Resources */,
 				C3FEB5341C25DB3800368557 /* F_{}[R1L5V%M(F9Q_R7BDDQ.jpg in Resources */,
@@ -570,9 +575,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = ZXQVideoPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.ideabinder.ZXQVideoPlayer;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ideabinder.ZXQVideoPlayer1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -582,9 +589,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = ZXQVideoPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.ideabinder.ZXQVideoPlayer;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ideabinder.ZXQVideoPlayer1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

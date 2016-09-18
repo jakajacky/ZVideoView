@@ -14,7 +14,7 @@
 #import "ZVideoPanHandler.h"
 #import "ZVideoPIPViewControllerDelegate.h"
 
-#define kIsPlayLocalVideo 0
+#define kIsPlayLocalVideo 1
 
 @interface ZVideoView ()
 <ZVideoSliderViewDelegate, ZVideoPanHandlerDelegate, AVPictureInPictureControllerDelegate>

@@ -41,9 +41,9 @@
 //  _zView = [[ZVideoView alloc] initWithFrame:[UIScreen mainScreen].bounds];
 //  [self.view addSubview:_zView];
   
-  NSString *path = [[NSBundle mainBundle] pathForResource:@"282M mp4" ofType:@"mp4"];
+  NSString *path = [[NSBundle mainBundle] pathForResource:@"282" ofType:@"mp4"];
 
-  [_zView setPath:@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"];
+  [_zView setPath:path];
   [_zView setTitle:@"视频播放"];
   _zView.VideoBackgroundColor = [UIColor blackColor];
   _zView.supportPictureInpicture = YES;  // 支持画中画,则不支持后台暂停，反之。。。
